@@ -1,0 +1,42 @@
+{
+  "P1": {
+    "respuesta": "RECHAZADO",
+    "regla": "R04"
+  },
+  "P2": {
+    "respuesta": "APROBADO",
+    "regla": "R01"
+  },
+  "P3": {
+    "respuesta": "REVISION_MANUAL",
+    "regla": "R05"
+  },
+  "P4": {
+    "respuesta": "APROBADO",
+    "regla": "DEFECTO"
+  },
+  "P5": {
+    "respuesta": "APROBADO",
+    "regla": "R08"
+  },
+  "P6": {
+    "respuesta": "REVISION_MANUAL",
+    "regla": "R09"
+  },
+  "P7": {
+    "respuesta": "REVISION_MANUAL",
+    "regla": "R10"
+  },
+  "P8": {
+    "respuesta": "REVISION_MANUAL",
+    "regla": "R03"
+  },
+  "P9": {
+    "respuesta": "NO",
+    "regla": null
+  },
+  "P10": {
+    "respuesta": "RECHAZADO",
+    "regla": "R02"
+  }
+}

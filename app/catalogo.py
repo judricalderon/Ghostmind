@@ -171,6 +171,9 @@ def seccion_reglas(registro: Registro, dic: Diccionario, reglas: list[dict], fil
 
     st.subheader("Detalle de la regla")
     por_codigo = {r["codigo"]: r for r in filtradas}
+    pedida = st.query_params.get("regla")
+    if "regla" not in st.session_state and pedida in por_codigo:
+        st.session_state["regla"] = pedida
     codigo = st.selectbox("Regla", list(por_codigo), key="regla",
                           format_func=lambda c: f"{c} · {por_codigo[c]['decision']}")
     regla = por_codigo[codigo]
@@ -377,6 +380,10 @@ def principal(registro: Registro, dic: Diccionario, ruta: Path) -> None:
         st.stop()
 
     por_id = {e["id"]: e for e in ejecuciones}
+    # Enlaces directos: ?ejecucion=1&regla=GM-05 abren esa ejecución y esa regla.
+    pedida = st.query_params.get("ejecucion")
+    if "ejecucion" not in st.session_state and pedida and pedida.isdigit() and int(pedida) in por_id:
+        st.session_state["ejecucion"] = int(pedida)
     with st.sidebar:
         st.header("Ejecución")
         eid = st.selectbox(

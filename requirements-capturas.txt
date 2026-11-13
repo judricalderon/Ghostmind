@@ -1,0 +1,3 @@
+# Opcional: capturas del catálogo para el informe (python -m evaluacion.capturas).
+# Usa el Microsoft Edge instalado (canal msedge); no descarga navegadores.
+playwright==1.65.1

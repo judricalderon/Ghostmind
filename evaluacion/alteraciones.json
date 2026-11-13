@@ -1,19 +1,23 @@
 {
   "version": "1.0",
-  "nota": "Reglas alteradas a proposito en legacy/crdapr_moderno.py (research.md, D11). Solo las lee la evaluacion.",
+  "nota": "Reglas alteradas a propósito en legacy/crdapr_moderno.py (research.md, D11). Solo las lee la evaluación.",
   "alteraciones": [
     {
       "id": "A1",
       "regla": "R01",
       "tipo": "eliminar",
-      "descripcion": "Se elimina la regla fosil: el convenio C-77 sigue el flujo normal.",
-      "error_que_representa": "Se descarta una regla no documentada que parecia obsoleta."
+      "descripcion": "Se elimina la regla fósil: el convenio C-77 sigue el flujo normal.",
+      "error_que_representa": "Se descarta una regla no documentada que parecía obsoleta."
     },
     {
       "id": "A2",
       "regla": "R04",
       "tipo": "cambiar_condicion",
-      "nueva_condicion": {"puntaje_credito": {"max": 419}},
+      "nueva_condicion": {
+        "puntaje_credito": {
+          "max": 419
+        }
+      },
       "descripcion": "El umbral de rechazo por puntaje pasa de 400 a 420 puntos.",
       "error_que_representa": "Un umbral mal transcrito."
     },
@@ -21,8 +25,8 @@
       "id": "A3",
       "regla": "R05",
       "tipo": "eliminar",
-      "descripcion": "Se elimina la excepcion: los desempleados con 120 meses o mas de antiguedad se rechazan.",
-      "error_que_representa": "Se pierde una excepcion."
+      "descripcion": "Se elimina la excepción: los desempleados con 120 meses o más de antigüedad se rechazan.",
+      "error_que_representa": "Se pierde una excepción."
     }
   ]
 }

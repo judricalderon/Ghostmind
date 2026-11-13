@@ -173,18 +173,18 @@ métricas.
 
 ### Pruebas de la Fase 7
 
-- [ ] T048 [P] [US4] Pruebas de métricas en `tests/test_metricas.py`: pureza y cobertura con reglas construidas a mano (una regla exacta da pureza 1; una regla mezclada da pureza menor que 0,95); C1, C2, C3 y C5 con casos pequeños conocidos
-- [ ] T049 [P] [US4] Prueba de punta a punta en `tests/test_experimento.py` con presupuesto reducido: genera los archivos esperados y las métricas se repiten con la misma semilla
+- [X] T048 [P] [US4] Pruebas de métricas en `tests/test_metricas.py`: pureza y cobertura con reglas construidas a mano (una regla exacta da pureza 1; una regla mezclada da pureza menor que 0,95); C1, C2, C3 y C5 con casos pequeños conocidos
+- [X] T049 [P] [US4] Prueba de punta a punta en `tests/test_experimento.py` con presupuesto reducido: genera los archivos esperados y las métricas se repiten con la misma semilla
 
 ### Implementación de la Fase 7
 
-- [ ] T050 [US4] Implementar `evaluacion/metricas.py`: pureza (2.000 solicitudes por regla, umbral 95 %), asociación a regla plantada, cobertura (2.000 solicitudes por región efectiva, umbral 90 %), C1, C2, C3 (10.000 solicitudes, semilla 20261112, conteo de coincidencias con el registro) y C5 por atribución de diferencias
-- [ ] T051 [US4] Implementar `evaluacion/experimento.py`: descubrimiento con semilla 42, verificación contra el modernizado, métricas, exportación del catálogo, robustez con semillas 1 a 5, y escritura de `resultados/metricas.json`, `metricas.md`, `robustez.json`, `robustez.md` y `catalogo_semilla42.json` (FR-022, FR-023, FR-025)
-- [ ] T052 [P] [US4] Crear el instrumento de C4 en `evaluacion/instrumento_c4/`: `cuestionario.md`, `clave.json` generada desde las reglas verdaderas, `plantilla_respuestas.csv` y `puntuar.py` (FR-024)
-- [ ] T053 [US4] Implementar `evaluacion/capturas.py` con Playwright y Edge, y `requirements-capturas.txt` (FR-026)
-- [ ] T054 [US4] Ejecutar la evaluación real y las capturas; versionar `resultados/`
-- [ ] T055 Completar `README.md`: instalación, ejecución de cada parte, resultados, demostración con capturas y guion de video (FR-027)
-- [ ] T056 Revisión final: buscar llaves, contraseñas y datos personales en el repositorio; verificar la constitución; correr `python -m pytest` completo
+- [X] T050 [US4] Implementar `evaluacion/metricas.py`: pureza (2.000 solicitudes por regla, umbral 95 %), asociación a regla plantada, cobertura (2.000 solicitudes por región efectiva, umbral 90 %), C1, C2, C3 (10.000 solicitudes, semilla 20261112, conteo de coincidencias con el registro) y C5 por atribución de diferencias
+- [X] T051 [US4] Implementar `evaluacion/experimento.py`: descubrimiento con semilla 42, verificación contra el modernizado, métricas, exportación del catálogo, robustez con semillas 1 a 5, y escritura de `resultados/metricas.json`, `metricas.md`, `robustez.json`, `robustez.md` y `catalogo_semilla42.json` (FR-022, FR-023, FR-025)
+- [X] T052 [P] [US4] Crear el instrumento de C4 en `evaluacion/instrumento_c4/`: `cuestionario.md`, `clave.json` generada desde las reglas verdaderas, `plantilla_respuestas.csv` y `puntuar.py` (FR-024)
+- [X] T053 [US4] Implementar `evaluacion/capturas.py` con Playwright y Edge, y `requirements-capturas.txt` (FR-026)
+- [X] T054 [US4] Ejecutar la evaluación real y las capturas; versionar `resultados/`
+- [X] T055 Completar `README.md`: instalación, ejecución de cada parte, resultados, demostración con capturas y guion de video (FR-027)
+- [X] T056 Revisión final: buscar llaves, contraseñas y datos personales en el repositorio; verificar la constitución; correr `python -m pytest` completo
 
 **Punto de control**: todo el MVP terminado.
 

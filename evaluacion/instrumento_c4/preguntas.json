@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "solicitud_base": {
+    "edad": 35,
+    "ingreso_mensual": 3000000,
+    "monto": 20000000,
+    "plazo_meses": 36,
+    "puntaje_credito": 700,
+    "antiguedad_meses": 50,
+    "tipo_empleo": "EMPLEADO",
+    "codigo_convenio": "NINGUNO"
+  },
+  "preguntas": [
+    {"id": "P1", "tipo": "decision", "cambios": {"puntaje_credito": 380}},
+    {"id": "P2", "tipo": "decision", "cambios": {"codigo_convenio": "C-77", "puntaje_credito": 300, "edad": 19}},
+    {"id": "P3", "tipo": "decision", "cambios": {"tipo_empleo": "DESEMPLEADO", "antiguedad_meses": 150}},
+    {"id": "P4", "tipo": "decision", "cambios": {"ingreso_mensual": 1200000, "codigo_convenio": "C-12"}},
+    {"id": "P5", "tipo": "decision", "cambios": {"monto": 95000000, "puntaje_credito": 820, "antiguedad_meses": 72}},
+    {"id": "P6", "tipo": "decision", "cambios": {"monto": 95000000, "puntaje_credito": 820, "antiguedad_meses": 30}},
+    {"id": "P7", "tipo": "decision", "cambios": {"puntaje_credito": 480}},
+    {"id": "P8", "tipo": "decision", "cambios": {"tipo_empleo": "INDEPENDIENTE", "codigo_convenio": "C-45", "monto": 49000000}},
+    {"id": "P9", "tipo": "campo_influye", "campo": "plazo_meses",
+     "enunciado": "¿El plazo del crédito cambia, por sí solo, la decisión del sistema en algún caso?"},
+    {"id": "P10", "tipo": "decision", "cambios": {"edad": 20}}
+  ],
+  "valoraciones": [
+    {"id": "U1", "enunciado": "¿Qué tan útil le resultó el catálogo para entender el comportamiento del sistema?", "metrica_c4": true},
+    {"id": "U2", "enunciado": "¿Qué tan clara le resultó la redacción de las reglas?", "metrica_c4": false},
+    {"id": "U3", "enunciado": "¿Qué tanto le ayudó la evidencia (casos y nivel de confianza) a decidir si una regla es correcta?", "metrica_c4": false}
+  ]
+}

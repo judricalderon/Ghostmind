@@ -6,3 +6,7 @@ primaryColor = "#2a78d6"
 
 [browser]
 gatherUsageStats = false
+
+[client]
+# Oculta el botón "Deploy" y el menú de desarrollo; el catálogo es una herramienta local.
+toolbarMode = "viewer"
