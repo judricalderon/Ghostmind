@@ -1,0 +1,123 @@
+{
+  "generado": "2026-11-12T23:49:23",
+  "semillas": [
+    42,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "filas": [
+    {
+      "semilla": 42,
+      "consultas": 5559,
+      "rondas": 5,
+      "motivo_parada": "estable",
+      "reglas_reportadas": 24,
+      "C1": 0.9,
+      "C2": 1.0,
+      "C3": 0.9992,
+      "C5": 1.0,
+      "regla_rara_recuperada": false
+    },
+    {
+      "semilla": 1,
+      "consultas": 5825,
+      "rondas": 5,
+      "motivo_parada": "estable",
+      "reglas_reportadas": 26,
+      "C1": 0.9,
+      "C2": 1.0,
+      "C3": 0.9992,
+      "C5": 1.0,
+      "regla_rara_recuperada": false
+    },
+    {
+      "semilla": 2,
+      "consultas": 5211,
+      "rondas": 4,
+      "motivo_parada": "estable",
+      "reglas_reportadas": 23,
+      "C1": 0.9,
+      "C2": 1.0,
+      "C3": 0.9992,
+      "C5": 1.0,
+      "regla_rara_recuperada": false
+    },
+    {
+      "semilla": 3,
+      "consultas": 11115,
+      "rondas": 8,
+      "motivo_parada": "estable",
+      "reglas_reportadas": 45,
+      "C1": 1.0,
+      "C2": 1.0,
+      "C3": 0.9999,
+      "C5": 1.0,
+      "regla_rara_recuperada": true
+    },
+    {
+      "semilla": 4,
+      "consultas": 7455,
+      "rondas": 7,
+      "motivo_parada": "estable",
+      "reglas_reportadas": 21,
+      "C1": 0.9,
+      "C2": 1.0,
+      "C3": 0.9994,
+      "C5": 1.0,
+      "regla_rara_recuperada": false
+    },
+    {
+      "semilla": 5,
+      "consultas": 5317,
+      "rondas": 4,
+      "motivo_parada": "estable",
+      "reglas_reportadas": 26,
+      "C1": 0.9,
+      "C2": 1.0,
+      "C3": 0.9992,
+      "C5": 1.0,
+      "regla_rara_recuperada": false
+    }
+  ],
+  "resumen": {
+    "consultas": {
+      "minimo": 5211,
+      "promedio": 6747.0,
+      "maximo": 11115
+    },
+    "rondas": {
+      "minimo": 4,
+      "promedio": 5.5,
+      "maximo": 8
+    },
+    "reglas_reportadas": {
+      "minimo": 21,
+      "promedio": 27.5,
+      "maximo": 45
+    },
+    "C1": {
+      "minimo": 0.9,
+      "promedio": 0.9166666666666669,
+      "maximo": 1.0
+    },
+    "C2": {
+      "minimo": 1.0,
+      "promedio": 1.0,
+      "maximo": 1.0
+    },
+    "C3": {
+      "minimo": 0.9992,
+      "promedio": 0.9993499999999998,
+      "maximo": 0.9999
+    },
+    "C5": {
+      "minimo": 1.0,
+      "promedio": 1.0,
+      "maximo": 1.0
+    }
+  },
+  "nota": "Información de robustez. Las metas se evalúan sobre la semilla principal."
+}

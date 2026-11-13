@@ -1,0 +1,528 @@
+{
+  "generado": "2026-11-12T23:49:23",
+  "duracion_total_s": 16.7,
+  "configuracion": {
+    "semilla_principal": 42,
+    "semillas_robustez": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "presupuesto": 20000,
+    "max_rondas": 15,
+    "muestras_por_regla": 2000,
+    "casos_c3": 10000,
+    "semilla_c3": 20261112,
+    "umbral_pureza": 0.95,
+    "umbral_fidelidad_local": 0.9,
+    "metas": {
+      "C1": 0.8,
+      "C2": 0.9,
+      "C3": 0.95,
+      "C5": 1.0
+    },
+    "base_de_evidencia": "datos/experimento.sqlite"
+  },
+  "versiones": {
+    "ghostmind": "0.1.0",
+    "python": "3.11.9",
+    "numpy": "2.4.6",
+    "pandas": "3.1.1",
+    "scikit_learn": "1.9.1",
+    "streamlit": "1.67.0",
+    "commit": "1ff8a45",
+    "cambios_sin_commit": false
+  },
+  "etiquetas": {
+    "edad": "Edad",
+    "ingreso_mensual": "Ingreso mensual",
+    "monto": "Monto solicitado",
+    "plazo_meses": "Plazo",
+    "puntaje_credito": "Puntaje de crédito",
+    "antiguedad_meses": "Antigüedad como cliente",
+    "tipo_empleo": "Tipo de empleo",
+    "codigo_convenio": "Código de convenio"
+  },
+  "principal": {
+    "semilla": 42,
+    "descubrimiento": {
+      "ejecucion_id": 1,
+      "consultas": 5559,
+      "presupuesto": 20000,
+      "rondas": 5,
+      "motivo_parada": "estable",
+      "reglas_reportadas": 24,
+      "reglas_corroboradas": 24,
+      "umbrales_confirmados": [
+        {
+          "campo": "antiguedad_meses",
+          "valor_cambio": 60
+        },
+        {
+          "campo": "antiguedad_meses",
+          "valor_cambio": 120
+        },
+        {
+          "campo": "edad",
+          "valor_cambio": 21
+        },
+        {
+          "campo": "ingreso_mensual",
+          "valor_cambio": 1500000
+        },
+        {
+          "campo": "monto",
+          "valor_cambio": 80000001
+        },
+        {
+          "campo": "puntaje_credito",
+          "valor_cambio": 400
+        },
+        {
+          "campo": "puntaje_credito",
+          "valor_cambio": 550
+        },
+        {
+          "campo": "puntaje_credito",
+          "valor_cambio": 800
+        }
+      ],
+      "duracion_s": 0.76
+    },
+    "verificacion": {
+      "ejecucion_id": 2,
+      "objetivo": "modernizado",
+      "casos_repetidos": 5559,
+      "consultas": 5559,
+      "diferencias": 1124,
+      "reglas_con_diferencias": [
+        "GM-02",
+        "GM-05",
+        "GM-10",
+        "GM-11",
+        "GM-17",
+        "GM-22",
+        "GM-23",
+        "GM-24"
+      ]
+    },
+    "criterios": {
+      "C1": {
+        "valor": 0.9,
+        "meta": 0.8,
+        "cumple": true,
+        "recuperadas": 9,
+        "total": 10,
+        "detalle": [
+          {
+            "regla": "R01",
+            "tipo": "fosil",
+            "descripcion": "El convenio C-77 siempre aprueba (convenio antiguo que nunca se retiró).",
+            "reglas_asociadas": [
+              "GM-10",
+              "GM-24"
+            ],
+            "fidelidad_local": 1.0,
+            "recuperada": true
+          },
+          {
+            "regla": "R02",
+            "tipo": "general",
+            "descripcion": "Se rechazan los solicitantes menores de 21 años.",
+            "reglas_asociadas": [
+              "GM-01"
+            ],
+            "fidelidad_local": 1.0,
+            "recuperada": true
+          },
+          {
+            "regla": "R03",
+            "tipo": "excepcion_rara",
+            "descripcion": "Los independientes del convenio C-45 que piden entre 48 y 50 millones van a revisión manual.",
+            "reglas_asociadas": [],
+            "fidelidad_local": 0.175,
+            "recuperada": false
+          },
+          {
+            "regla": "R04",
+            "tipo": "general",
+            "descripcion": "Se rechaza un puntaje de crédito menor que 400.",
+            "reglas_asociadas": [
+              "GM-07"
+            ],
+            "fidelidad_local": 1.0,
+            "recuperada": true
+          },
+          {
+            "regla": "R05",
+            "tipo": "excepcion",
+            "descripcion": "Excepción de R06: un desempleado con 120 meses o más de antigüedad va a revisión manual.",
+            "reglas_asociadas": [
+              "GM-02",
+              "GM-17"
+            ],
+            "fidelidad_local": 1.0,
+            "recuperada": true
+          },
+          {
+            "regla": "R06",
+            "tipo": "general",
+            "descripcion": "Se rechazan los desempleados.",
+            "reglas_asociadas": [
+              "GM-03",
+              "GM-09"
+            ],
+            "fidelidad_local": 1.0,
+            "recuperada": true
+          },
+          {
+            "regla": "R07",
+            "tipo": "general",
+            "descripcion": "Se rechaza un ingreso menor que 1.500.000, salvo con libranza C-12.",
+            "reglas_asociadas": [
+              "GM-04",
+              "GM-15",
+              "GM-18",
+              "GM-20"
+            ],
+            "fidelidad_local": 1.0,
+            "recuperada": true
+          },
+          {
+            "regla": "R08",
+            "tipo": "excepcion",
+            "descripcion": "Excepción de R09: los montos altos con puntaje de 800 o más y 60 meses o más de antigüedad se aprueban.",
+            "reglas_asociadas": [
+              "GM-16",
+              "GM-21"
+            ],
+            "fidelidad_local": 1.0,
+            "recuperada": true
+          },
+          {
+            "regla": "R09",
+            "tipo": "general",
+            "descripcion": "Los montos mayores que 80.000.000 van a revisión manual.",
+            "reglas_asociadas": [
+              "GM-08",
+              "GM-13",
+              "GM-14",
+              "GM-19"
+            ],
+            "fidelidad_local": 1.0,
+            "recuperada": true
+          },
+          {
+            "regla": "R10",
+            "tipo": "general",
+            "descripcion": "Un puntaje de crédito menor que 550 va a revisión manual.",
+            "reglas_asociadas": [
+              "GM-05",
+              "GM-11",
+              "GM-22",
+              "GM-23"
+            ],
+            "fidelidad_local": 1.0,
+            "recuperada": true
+          }
+        ]
+      },
+      "C2": {
+        "valor": 1.0,
+        "meta": 0.9,
+        "cumple": true,
+        "existen": 24,
+        "reportadas": 24,
+        "detalle": [
+          {
+            "codigo": "GM-01",
+            "decision": "RECHAZADO",
+            "estado": "corroborada",
+            "confianza": 0.9946,
+            "texto_negocio": "Se rechaza la solicitud cuando la edad es de 20 años o menos y el código de convenio no es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R02"
+          },
+          {
+            "codigo": "GM-02",
+            "decision": "REVISION_MANUAL",
+            "estado": "corroborada",
+            "confianza": 0.9918,
+            "texto_negocio": "La solicitud pasa a revisión manual cuando la edad es de 21 años o más, el puntaje de crédito es de 550 puntos o más, la antigüedad como cliente es de 120 meses o más, el tipo de empleo es desempleado y el código de convenio no es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R05"
+          },
+          {
+            "codigo": "GM-03",
+            "decision": "RECHAZADO",
+            "estado": "corroborada",
+            "confianza": 0.9893,
+            "texto_negocio": "Se rechaza la solicitud cuando la edad es de 21 años o más, el puntaje de crédito es de 550 puntos o más, la antigüedad como cliente es de 119 meses o menos, el tipo de empleo es desempleado y el código de convenio no es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R06"
+          },
+          {
+            "codigo": "GM-04",
+            "decision": "RECHAZADO",
+            "estado": "corroborada",
+            "confianza": 0.9893,
+            "texto_negocio": "Se rechaza la solicitud cuando la edad es de 21 años o más, el ingreso mensual es de 1.499.999 pesos o menos, el monto solicitado es de 80.000.001 pesos o más, el puntaje de crédito es de 550 puntos o más, el tipo de empleo no es desempleado y el código de convenio no es C-12 ni C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R07"
+          },
+          {
+            "codigo": "GM-05",
+            "decision": "REVISION_MANUAL",
+            "estado": "corroborada",
+            "confianza": 0.9893,
+            "texto_negocio": "La solicitud pasa a revisión manual cuando la edad es de 21 años o más, el ingreso mensual es de 1.500.000 pesos o más, el puntaje de crédito está entre 400 y 549 puntos, la antigüedad como cliente es de 120 meses o más y el código de convenio no es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R10"
+          },
+          {
+            "codigo": "GM-06",
+            "decision": "APROBADO",
+            "estado": "corroborada",
+            "confianza": 0.9886,
+            "texto_negocio": "Se aprueba la solicitud cuando la edad es de 21 años o más, el ingreso mensual es de 1.500.000 pesos o más, el monto solicitado es de 80.000.000 pesos o menos, el puntaje de crédito es de 550 puntos o más, el tipo de empleo no es desempleado y el código de convenio no es C-77.",
+            "pureza": 0.997,
+            "existe": true,
+            "asociada": "DEFECTO"
+          },
+          {
+            "codigo": "GM-07",
+            "decision": "RECHAZADO",
+            "estado": "corroborada",
+            "confianza": 0.9872,
+            "texto_negocio": "Se rechaza la solicitud cuando la edad es de 21 años o más, el puntaje de crédito es de 399 puntos o menos y el código de convenio no es C-77.",
+            "pureza": 0.9995,
+            "existe": true,
+            "asociada": "R04"
+          },
+          {
+            "codigo": "GM-08",
+            "decision": "REVISION_MANUAL",
+            "estado": "corroborada",
+            "confianza": 0.9859,
+            "texto_negocio": "La solicitud pasa a revisión manual cuando la edad es de 21 años o más, el ingreso mensual es de 1.500.000 pesos o más, el monto solicitado es de 80.000.001 pesos o más, el puntaje de crédito está entre 550 y 799 puntos, el tipo de empleo no es desempleado y el código de convenio no es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R09"
+          },
+          {
+            "codigo": "GM-09",
+            "decision": "RECHAZADO",
+            "estado": "corroborada",
+            "confianza": 0.9857,
+            "texto_negocio": "Se rechaza la solicitud cuando la edad es de 21 años o más, el puntaje de crédito está entre 400 y 549 puntos, la antigüedad como cliente es de 119 meses o menos, el tipo de empleo es desempleado y el código de convenio no es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R06"
+          },
+          {
+            "codigo": "GM-10",
+            "decision": "APROBADO",
+            "estado": "corroborada",
+            "confianza": 0.9839,
+            "texto_negocio": "Se aprueba la solicitud cuando la edad es de 21 años o más y el código de convenio es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R01"
+          },
+          {
+            "codigo": "GM-11",
+            "decision": "REVISION_MANUAL",
+            "estado": "corroborada",
+            "confianza": 0.9833,
+            "texto_negocio": "La solicitud pasa a revisión manual cuando la edad es de 21 años o más, el ingreso mensual es de 1.500.000 pesos o más, el puntaje de crédito está entre 400 y 549 puntos, la antigüedad como cliente es de 119 meses o menos, el tipo de empleo no es desempleado y el código de convenio no es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R10"
+          },
+          {
+            "codigo": "GM-12",
+            "decision": "APROBADO",
+            "estado": "corroborada",
+            "confianza": 0.9782,
+            "texto_negocio": "Se aprueba la solicitud cuando la edad es de 21 años o más, el ingreso mensual es de 1.499.999 pesos o menos, el monto solicitado es de 80.000.000 pesos o menos, el puntaje de crédito es de 550 puntos o más, el tipo de empleo no es desempleado y el código de convenio es C-12.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "DEFECTO"
+          },
+          {
+            "codigo": "GM-13",
+            "decision": "REVISION_MANUAL",
+            "estado": "corroborada",
+            "confianza": 0.9782,
+            "texto_negocio": "La solicitud pasa a revisión manual cuando la edad es de 21 años o más, el ingreso mensual es de 1.499.999 pesos o menos, el monto solicitado es de 80.000.001 pesos o más, el puntaje de crédito es de 550 puntos o más, la antigüedad como cliente es de 59 meses o menos, el tipo de empleo no es desempleado y el código de convenio es C-12.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R09"
+          },
+          {
+            "codigo": "GM-14",
+            "decision": "REVISION_MANUAL",
+            "estado": "corroborada",
+            "confianza": 0.9778,
+            "texto_negocio": "La solicitud pasa a revisión manual cuando la edad es de 21 años o más, el ingreso mensual es de 1.500.000 pesos o más, el monto solicitado es de 80.000.001 pesos o más, el puntaje de crédito es de 800 puntos o más, la antigüedad como cliente es de 59 meses o menos, el tipo de empleo no es desempleado y el código de convenio no es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R09"
+          },
+          {
+            "codigo": "GM-15",
+            "decision": "RECHAZADO",
+            "estado": "corroborada",
+            "confianza": 0.9776,
+            "texto_negocio": "Se rechaza la solicitud cuando la edad es de 21 años o más, el ingreso mensual es de 1.499.999 pesos o menos, el monto solicitado es de 80.000.000 pesos o menos, el puntaje de crédito es de 550 puntos o más, el tipo de empleo no es desempleado y el código de convenio no es C-12 ni C-77.",
+            "pureza": 0.9985,
+            "existe": true,
+            "asociada": "R07"
+          },
+          {
+            "codigo": "GM-16",
+            "decision": "APROBADO",
+            "estado": "corroborada",
+            "confianza": 0.9772,
+            "texto_negocio": "Se aprueba la solicitud cuando la edad es de 21 años o más, el ingreso mensual es de 1.500.000 pesos o más, el monto solicitado es de 80.000.001 pesos o más, el puntaje de crédito es de 800 puntos o más, la antigüedad como cliente es de 60 meses o más, el tipo de empleo no es desempleado y el código de convenio no es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R08"
+          },
+          {
+            "codigo": "GM-17",
+            "decision": "REVISION_MANUAL",
+            "estado": "corroborada",
+            "confianza": 0.9742,
+            "texto_negocio": "La solicitud pasa a revisión manual cuando la edad es de 21 años o más, el ingreso mensual es de 1.499.999 pesos o menos, el puntaje de crédito está entre 400 y 549 puntos, la antigüedad como cliente es de 120 meses o más, el tipo de empleo es desempleado y el código de convenio no es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R05"
+          },
+          {
+            "codigo": "GM-18",
+            "decision": "RECHAZADO",
+            "estado": "corroborada",
+            "confianza": 0.9738,
+            "texto_negocio": "Se rechaza la solicitud cuando la edad es de 21 años o más, el ingreso mensual es de 1.499.999 pesos o menos, el puntaje de crédito está entre 400 y 549 puntos, la antigüedad como cliente es de 119 meses o menos, el tipo de empleo no es desempleado y el código de convenio no es C-12 ni C-77.",
+            "pureza": 0.9995,
+            "existe": true,
+            "asociada": "R07"
+          },
+          {
+            "codigo": "GM-19",
+            "decision": "REVISION_MANUAL",
+            "estado": "corroborada",
+            "confianza": 0.9729,
+            "texto_negocio": "La solicitud pasa a revisión manual cuando la edad es de 21 años o más, el ingreso mensual es de 1.499.999 pesos o menos, el monto solicitado es de 80.000.001 pesos o más, el puntaje de crédito está entre 550 y 799 puntos, la antigüedad como cliente es de 60 meses o más, el tipo de empleo no es desempleado y el código de convenio es C-12.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R09"
+          },
+          {
+            "codigo": "GM-20",
+            "decision": "RECHAZADO",
+            "estado": "corroborada",
+            "confianza": 0.9657,
+            "texto_negocio": "Se rechaza la solicitud cuando la edad es de 21 años o más, el ingreso mensual es de 1.499.999 pesos o menos, el puntaje de crédito está entre 400 y 549 puntos, la antigüedad como cliente es de 120 meses o más, el tipo de empleo no es desempleado y el código de convenio no es C-12 ni C-77.",
+            "pureza": 0.9985,
+            "existe": true,
+            "asociada": "R07"
+          },
+          {
+            "codigo": "GM-21",
+            "decision": "APROBADO",
+            "estado": "corroborada",
+            "confianza": 0.965,
+            "texto_negocio": "Se aprueba la solicitud cuando la edad es de 21 años o más, el ingreso mensual es de 1.499.999 pesos o menos, el monto solicitado es de 80.000.001 pesos o más, el puntaje de crédito es de 800 puntos o más, la antigüedad como cliente es de 60 meses o más, el tipo de empleo no es desempleado y el código de convenio es C-12.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R08"
+          },
+          {
+            "codigo": "GM-22",
+            "decision": "REVISION_MANUAL",
+            "estado": "corroborada",
+            "confianza": 0.9552,
+            "texto_negocio": "La solicitud pasa a revisión manual cuando la edad es de 21 años o más, el ingreso mensual es de 1.499.999 pesos o menos, el puntaje de crédito está entre 400 y 549 puntos, la antigüedad como cliente es de 120 meses o más, el tipo de empleo no es desempleado y el código de convenio es C-12.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R10"
+          },
+          {
+            "codigo": "GM-23",
+            "decision": "REVISION_MANUAL",
+            "estado": "corroborada",
+            "confianza": 0.9519,
+            "texto_negocio": "La solicitud pasa a revisión manual cuando la edad es de 21 años o más, el ingreso mensual es de 1.499.999 pesos o menos, el puntaje de crédito está entre 400 y 549 puntos, la antigüedad como cliente es de 119 meses o menos, el tipo de empleo no es desempleado y el código de convenio es C-12.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R10"
+          },
+          {
+            "codigo": "GM-24",
+            "decision": "APROBADO",
+            "estado": "corroborada",
+            "confianza": 0.9324,
+            "texto_negocio": "Se aprueba la solicitud cuando la edad es de 20 años o menos y el código de convenio es C-77.",
+            "pureza": 1.0,
+            "existe": true,
+            "asociada": "R01"
+          }
+        ]
+      },
+      "C3": {
+        "valor": 0.9992,
+        "meta": 0.95,
+        "cumple": true,
+        "casos": 10000,
+        "coinciden": 9992,
+        "semilla": 20261112,
+        "casos_en_registro": 0
+      },
+      "C4": {
+        "estado": "pendiente",
+        "nota": "Se mide con especialistas usando evaluacion/instrumento_c4/.",
+        "meta": "dos de cada tres respuestas correctas y promedio de utilidad de 4 o más"
+      },
+      "C5": {
+        "valor": 1.0,
+        "meta": 1.0,
+        "cumple": true,
+        "detectadas": 3,
+        "total": 3,
+        "diferencias_reportadas": 1124,
+        "detalle": [
+          {
+            "alteracion": "A1",
+            "regla": "R01",
+            "descripcion": "Se elimina la regla fósil: el convenio C-77 sigue el flujo normal.",
+            "diferencias_atribuidas": 245,
+            "detectada": true
+          },
+          {
+            "alteracion": "A2",
+            "regla": "R04",
+            "descripcion": "El umbral de rechazo por puntaje pasa de 400 a 420 puntos.",
+            "diferencias_atribuidas": 159,
+            "detectada": true
+          },
+          {
+            "alteracion": "A3",
+            "regla": "R05",
+            "descripcion": "Se elimina la excepción: los desempleados con 120 meses o más de antigüedad se rechazan.",
+            "diferencias_atribuidas": 754,
+            "detectada": true
+          }
+        ]
+      }
+    }
+  }
+}
