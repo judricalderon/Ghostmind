@@ -89,10 +89,20 @@ def tabla_condiciones(regla: dict, dic: Diccionario) -> pd.DataFrame:
     return pd.DataFrame(filas, columns=["Campo", "Condición"])
 
 
+def con_miles(tabla: pd.DataFrame, dic: Diccionario) -> pd.DataFrame:
+    """Muestra con separador de miles los campos en pesos (solo para visualizar)."""
+    tabla = tabla.copy()
+    for campo in dic.numericos:
+        if campo.unidad == "pesos" and campo.nombre in tabla:
+            tabla[campo.nombre] = [formato_miles(int(v)) for v in tabla[campo.nombre]]
+    return tabla
+
+
 def tabla_casos(casos: pd.DataFrame, dic: Diccionario) -> pd.DataFrame:
     columnas = ["n_consulta", "ronda", "origen", *dic.nombres, "decision"]
     vista = casos[columnas].copy()
     vista["origen"] = vista["origen"].map(ORIGENES).fillna(vista["origen"])
+    vista = con_miles(vista, dic)
     nombres = {"n_consulta": "Consulta", "ronda": "Ronda", "origen": "Origen", "decision": "Decisión"}
     nombres.update({c.nombre: c.etiqueta.capitalize() for c in dic.campos})
     return vista.rename(columns=nombres)
@@ -360,7 +370,7 @@ def seccion_verificacion(registro: Registro, dic: Diccionario, eid: int, reglas:
     if sin_regla:
         st.warning(f"{sin_regla} diferencias en casos que no caen en ninguna regla.")
     with st.expander(f"Casos con diferencias ({formato_miles(len(diferencias))}; se muestran hasta 100)"):
-        vista = diferencias.head(100)[["codigo", *dic.nombres, "decision_original", "decision_nueva"]]
+        vista = con_miles(diferencias.head(100)[["codigo", *dic.nombres, "decision_original", "decision_nueva"]], dic)
         nombres = {"codigo": "Regla", "decision_original": "Antes", "decision_nueva": "Ahora"}
         nombres.update({c.nombre: c.etiqueta.capitalize() for c in dic.campos})
         st.dataframe(vista.rename(columns=nombres), hide_index=True, width="stretch")

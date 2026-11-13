@@ -110,8 +110,11 @@ def capturar(db: Path = BD_EXPERIMENTO, salida: Path = SALIDA / "capturas", semi
 
             pagina.get_by_text("Casos que la respaldan", exact=False).first.click()
             pagina.wait_for_timeout(1500)
-            al_inicio("Casos que la respaldan", exacto=False)
-            guardar("04_evidencia.png")
+            # Solo el bloque de evidencia (título y tabla), porque está al final de la página.
+            bloque = pagina.get_by_test_id("stExpander").filter(has_text="Casos que la respaldan").first
+            ruta = salida / "04_evidencia.png"
+            bloque.screenshot(path=str(ruta))
+            archivos.append(ruta)
 
             pagina.get_by_role("tab", name="Convergencia").click()
             pagina.wait_for_timeout(2500)
