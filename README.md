@@ -13,7 +13,7 @@ En construcción por fases con un proceso dirigido por especificaciones ([Spec K
 | 0 | Preparación del repositorio y de Spec Kit | Lista |
 | 1 | Constitución, especificación, plan y tareas | Lista |
 | 2 | Sistema legacy simulado y reglas verdaderas | Lista |
-| 3 | Adaptador, explorador y registro SQLite | Pendiente |
+| 3 | Adaptador, explorador (muestreo inicial) y registro SQLite | Lista |
 | 4 | Extractor de reglas, umbrales y confianza | Pendiente |
 | 5 | Catálogo en Streamlit | Pendiente |
 | 6 | Versión modernizada y verificador diferencial | Pendiente |
@@ -57,7 +57,7 @@ python -m pytest
 |---------|-----------|
 | `sistemas/` | Diccionario de campos y puntos de entrada: lo único que GhostMind conoce del sistema |
 | `legacy/` | Sistema legacy simulado de aprobación de créditos (GhostMind no lo lee) |
-| `ghostmind/` | El producto: por ahora, el diccionario y el registro de ancho fijo |
+| `ghostmind/` | El producto: diccionario, adaptador, registro SQLite y muestreo inicial |
 | `evaluacion/` | Reglas verdaderas y evaluador; solo los usa la evaluación del experimento |
 | `tests/` | Pruebas automáticas |
 

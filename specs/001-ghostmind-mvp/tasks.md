@@ -72,17 +72,17 @@ contados y reproducibles.
 
 ### Pruebas de la Fase 3
 
-- [ ] T016 [P] [US1] Prueba de caja negra en `tests/test_arquitectura.py`: ningún archivo de `ghostmind/` importa `legacy` ni `evaluacion` ni menciona `reglas_verdaderas` o `alteraciones`; solo `ghostmind/adaptador.py` resuelve puntos de entrada
-- [ ] T017 [P] [US1] Pruebas del adaptador en `tests/test_adaptador.py`: rechaza solicitudes inválidas sin contar; `PresupuestoAgotado` al llegar al límite; registra error y lanza `ErrorDelSistema` ante respuestas inesperadas; `consultas` coincide con las filas de `casos`
-- [ ] T018 [P] [US1] Pruebas del registro en `tests/test_registro.py`: esquema de data-model.md, escritura de ejecuciones, casos, rondas y lectura por ejecución
-- [ ] T019 [P] [US1] Pruebas del muestreo en `tests/test_muestreo.py`: 400 aleatorios, 120 de límites (mínimo y máximo de cada campo numérico), 200 de categorías (las 20 combinaciones); todo dentro del diccionario; misma semilla, mismas solicitudes
+- [X] T016 [P] [US1] Prueba de caja negra en `tests/test_arquitectura.py`: ningún archivo de `ghostmind/` importa `legacy` ni `evaluacion` ni menciona `reglas_verdaderas` o `alteraciones`; solo `ghostmind/adaptador.py` resuelve puntos de entrada
+- [X] T017 [P] [US1] Pruebas del adaptador en `tests/test_adaptador.py`: rechaza solicitudes inválidas sin contar; `PresupuestoAgotado` al llegar al límite; registra error y lanza `ErrorDelSistema` ante respuestas inesperadas; `consultas` coincide con las filas de `casos`
+- [X] T018 [P] [US1] Pruebas del registro en `tests/test_registro.py`: esquema de data-model.md, escritura de ejecuciones, casos, rondas y lectura por ejecución
+- [X] T019 [P] [US1] Pruebas del muestreo en `tests/test_muestreo.py`: 400 aleatorios, 120 de límites (mínimo y máximo de cada campo numérico), 200 de categorías (las 20 combinaciones); todo dentro del diccionario; misma semilla, mismas solicitudes
 
 ### Implementación de la Fase 3
 
-- [ ] T020 [P] [US1] Implementar `ghostmind/registro.py` con las tablas `ejecuciones`, `casos`, `umbrales`, `rondas`, `reglas`, `regla_casos`, `revisiones` y `diferencias` de data-model.md
-- [ ] T021 [US1] Implementar `ghostmind/adaptador.py` según contracts/adaptador.md (depende de T011 y T020)
-- [ ] T022 [P] [US1] Implementar `ghostmind/muestreo.py` con el muestreo inicial de D5
-- [ ] T023 [US1] Orden preliminar `python -m ghostmind muestrear` en `ghostmind/__main__.py` que crea la ejecución y corre el muestreo inicial
+- [X] T020 [P] [US1] Implementar `ghostmind/registro.py` con las tablas `ejecuciones`, `casos`, `umbrales`, `rondas`, `reglas`, `regla_casos`, `revisiones` y `diferencias` de data-model.md
+- [X] T021 [US1] Implementar `ghostmind/adaptador.py` según contracts/adaptador.md (depende de T011 y T020)
+- [X] T022 [P] [US1] Implementar `ghostmind/muestreo.py` con el muestreo inicial de D5
+- [X] T023 [US1] Orden preliminar `python -m ghostmind muestrear` en `ghostmind/__main__.py` que crea la ejecución y corre el muestreo inicial
 
 **Punto de control**: 720 consultas registradas con origen y ronda 0; pruebas pasando.
 
