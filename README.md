@@ -14,7 +14,7 @@ En construcción por fases con un proceso dirigido por especificaciones ([Spec K
 | 1 | Constitución, especificación, plan y tareas | Lista |
 | 2 | Sistema legacy simulado y reglas verdaderas | Lista |
 | 3 | Adaptador, explorador (muestreo inicial) y registro SQLite | Lista |
-| 4 | Extractor de reglas, umbrales y confianza | Pendiente |
+| 4 | Extractor de reglas, umbrales y confianza | Lista |
 | 5 | Catálogo en Streamlit | Pendiente |
 | 6 | Versión modernizada y verificador diferencial | Pendiente |
 | 7 | Evaluación del experimento y resultados | Pendiente |
@@ -51,13 +51,22 @@ pip install -r requirements.txt
 python -m pytest
 ```
 
+## Descubrir reglas (disponible desde la fase 4)
+
+```bash
+python -m ghostmind descubrir --objetivo legacy --semilla 42 --presupuesto 20000
+python -m ghostmind reglas --ejecucion 1
+```
+
+La base de evidencia queda en `datos/ghostmind.sqlite`; se puede cambiar con `--db` o con la variable `GHOSTMIND_DB`.
+
 ## Estructura actual
 
 | Carpeta | Contenido |
 |---------|-----------|
 | `sistemas/` | Diccionario de campos y puntos de entrada: lo único que GhostMind conoce del sistema |
 | `legacy/` | Sistema legacy simulado de aprobación de créditos (GhostMind no lo lee) |
-| `ghostmind/` | El producto: diccionario, adaptador, registro SQLite y muestreo inicial |
+| `ghostmind/` | El producto: diccionario, adaptador, registro SQLite, muestreo, extractor y explorador |
 | `evaluacion/` | Reglas verdaderas y evaluador; solo los usa la evaluación del experimento |
 | `tests/` | Pruebas automáticas |
 

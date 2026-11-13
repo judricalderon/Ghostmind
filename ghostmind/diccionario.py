@@ -25,6 +25,11 @@ class SolicitudInvalida(ValueError):
 class ValorCategorico:
     valor: str
     codigo: str
+    etiqueta: str = ""
+
+    @property
+    def texto(self) -> str:
+        return self.etiqueta or self.valor
 
 
 @dataclass(frozen=True)
@@ -38,6 +43,13 @@ class Campo:
     minimo: int | None = None
     maximo: int | None = None
     valores: tuple[ValorCategorico, ...] = ()
+    articulo: str = "el"
+
+    def etiqueta_valor(self, valor: str) -> str:
+        for v in self.valores:
+            if v.valor == valor:
+                return v.texto
+        return valor
 
     @property
     def es_numerico(self) -> bool:
@@ -104,7 +116,11 @@ class Diccionario:
                     unidad=c.get("unidad"),
                     minimo=c.get("minimo"),
                     maximo=c.get("maximo"),
-                    valores=tuple(ValorCategorico(v["valor"], v["codigo"]) for v in c.get("valores", [])),
+                    valores=tuple(
+                        ValorCategorico(v["valor"], v["codigo"], v.get("etiqueta", ""))
+                        for v in c.get("valores", [])
+                    ),
+                    articulo=c.get("articulo", "el"),
                 )
             )
         return cls(

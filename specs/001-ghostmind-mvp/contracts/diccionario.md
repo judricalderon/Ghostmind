@@ -32,6 +32,10 @@ contiene reglas de negocio.
 }
 ```
 
+Campos opcionales para la redacción de reglas (agregados en la Fase 4): `articulo` de cada campo
+(`el` o `la`) y `etiqueta` de cada valor categórico (por ejemplo, `desempleado`). No cambian el
+registro ni la validación.
+
 ## Registro de ancho fijo
 
 - Campos enteros: dígitos con ceros a la izquierda, por ejemplo `edad` 35 es `035`.

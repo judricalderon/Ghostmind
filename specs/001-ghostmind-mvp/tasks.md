@@ -98,19 +98,19 @@ minutos, es determinista y no supera el presupuesto.
 
 ### Pruebas de la Fase 4
 
-- [ ] T024 [P] [US1] Pruebas de reglas en `tests/test_reglas.py`: conversión de umbrales a enteros (`x <= t` a `x ≤ floor(t)`, `x > t` a `x ≥ floor(t) + 1`), pertenencia de un caso a una caja, confianza de Wilson con los ejemplos de D8, reglas de estado, redacción técnica y de negocio sin condiciones de dominio
-- [ ] T025 [P] [US1] Pruebas del extractor en `tests/test_extractor.py`: con datos sintéticos de una regla simple, el árbol produce la caja esperada; respaldo y contraejemplos correctos
-- [ ] T026 [P] [US1] Pruebas del explorador en `tests/test_explorador.py`: la bisección encuentra el punto exacto de cambio en un sistema de prueba con umbral conocido; la búsqueda de contraejemplos los registra; parada por estabilidad, por presupuesto, por máximo de rondas y por errores; un presupuesto menor que el muestreo inicial da error antes de consultar; misma semilla, mismo resultado
+- [X] T024 [P] [US1] Pruebas de reglas en `tests/test_reglas.py`: conversión de umbrales a enteros (`x <= t` a `x ≤ floor(t)`, `x > t` a `x ≥ floor(t) + 1`), pertenencia de un caso a una caja, confianza de Wilson con los ejemplos de D8, reglas de estado, redacción técnica y de negocio sin condiciones de dominio
+- [X] T025 [P] [US1] Pruebas del extractor en `tests/test_extractor.py`: con datos sintéticos de una regla simple, el árbol produce la caja esperada; respaldo y contraejemplos correctos
+- [X] T026 [P] [US1] Pruebas del explorador en `tests/test_explorador.py`: la bisección encuentra el punto exacto de cambio en un sistema de prueba con umbral conocido; la búsqueda de contraejemplos los registra; parada por estabilidad, por presupuesto, por máximo de rondas y por errores; un presupuesto menor que el muestreo inicial da error antes de consultar; misma semilla, mismo resultado
 
 ### Implementación de la Fase 4
 
-- [ ] T027 [P] [US1] Implementar `ghostmind/reglas.py`: caja, regla, confianza de Wilson al 95 %, estados (`hipotesis`, `corroborada`, `validada`, `rechazada`) y redacción por plantilla (D8, D9)
-- [ ] T028 [US1] Implementar `ghostmind/extractor.py`: `DecisionTreeClassifier(criterion="entropy", min_samples_leaf=3, random_state=semilla)` con variables indicadoras y conversión de hojas a reglas (D6)
-- [ ] T029 [US1] Implementar en `ghostmind/explorador.py` la bisección de umbrales con caché de umbrales confirmados y registro en `umbrales` (D7, paso 1)
-- [ ] T030 [US1] Implementar en `ghostmind/explorador.py` la búsqueda de contraejemplos (25 por hoja más bordes) y la exploración local alrededor de hasta 10 contraejemplos por ronda (D7, pasos 2 y 3)
-- [ ] T031 [US1] Implementar en `ghostmind/explorador.py` el ciclo de rondas, la tabla `rondas`, el criterio de parada y el motivo (D7, paso 4; FR-008), incluida la parada con motivo `errores` si las respuestas inválidas del sistema superan el 1 % de las consultas
-- [ ] T032 [US1] Guardar las reglas finales con evidencia (`regla_casos`), confianza y estado `corroborada` según D8 en `ghostmind/registro.py`
-- [ ] T033 [US1] Órdenes `descubrir` y `reglas` en `ghostmind/__main__.py` según contracts/cli.md, con tabla de reglas en la terminal
+- [X] T027 [P] [US1] Implementar `ghostmind/reglas.py`: caja, regla, confianza de Wilson al 95 %, estados (`hipotesis`, `corroborada`, `validada`, `rechazada`) y redacción por plantilla (D8, D9)
+- [X] T028 [US1] Implementar `ghostmind/extractor.py`: `DecisionTreeClassifier(criterion="entropy", min_samples_leaf=3, random_state=semilla)` con variables indicadoras y conversión de hojas a reglas (D6)
+- [X] T029 [US1] Implementar en `ghostmind/explorador.py` la bisección de umbrales con caché de umbrales confirmados y registro en `umbrales` (D7, paso 1)
+- [X] T030 [US1] Implementar en `ghostmind/explorador.py` la búsqueda de contraejemplos (25 por hoja más bordes) y la exploración local alrededor de hasta 10 contraejemplos por ronda (D7, pasos 2 y 3)
+- [X] T031 [US1] Implementar en `ghostmind/explorador.py` el ciclo de rondas, la tabla `rondas`, el criterio de parada y el motivo (D7, paso 4; FR-008), incluida la parada con motivo `errores` si las respuestas inválidas del sistema superan el 1 % de las consultas
+- [X] T032 [US1] Guardar las reglas finales con evidencia (`regla_casos`), confianza y estado `corroborada` según D8 en `ghostmind/registro.py`
+- [X] T033 [US1] Órdenes `descubrir` y `reglas` en `ghostmind/__main__.py` según contracts/cli.md, con tabla de reglas en la terminal
 
 **Punto de control**: historia 1 completa y demostrable de forma independiente.
 

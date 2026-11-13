@@ -86,7 +86,8 @@ Sirve para mostrar cómo convergió el descubrimiento.
 | `condiciones` | TEXT (JSON) | caja de la regla (ver abajo) |
 | `decision` | TEXT | una de las 3 decisiones |
 | `respaldo`, `contraejemplos` | INTEGER | ≥ 0 |
-| `consultas_prueba` | INTEGER | consultas de búsqueda de contraejemplos de la ronda final |
+| `consultas_prueba` | INTEGER | consultas de búsqueda de contraejemplos dentro de la caja (D8) |
+| `umbrales_confirmados` | TEXT (JSON) | lista de `{campo, valor_cambio}` de los bordes de la caja confirmados por bisección |
 | `confianza` | REAL | 0 a 1, límite inferior de Wilson al 95 % |
 | `estado` | TEXT | `hipotesis`, `corroborada`, `validada` o `rechazada` |
 | `texto_tecnico`, `texto_negocio` | TEXT | redacción por plantilla |

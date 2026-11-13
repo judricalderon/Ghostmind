@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS reglas (
     respaldo INTEGER NOT NULL CHECK (respaldo >= 0),
     contraejemplos INTEGER NOT NULL CHECK (contraejemplos >= 0),
     consultas_prueba INTEGER NOT NULL DEFAULT 0,
+    umbrales_confirmados TEXT NOT NULL DEFAULT '[]',
     confianza REAL NOT NULL CHECK (confianza BETWEEN 0 AND 1),
     estado TEXT NOT NULL CHECK (estado IN ('hipotesis', 'corroborada', 'validada', 'rechazada')),
     texto_tecnico TEXT NOT NULL,
@@ -281,6 +282,56 @@ class Registro:
             columns=["id", "ejecucion_id", "campo", "valor_cambio", "caso_bajo_id", "caso_alto_id",
                      "decision_baja", "decision_alta", "ronda"],
         )
+
+    # Reglas y evidencia
+
+    def guardar_reglas(self, ejecucion_id: int, reglas: Iterable[Any]) -> None:
+        """Guarda las reglas finales de una ejecución y sus enlaces con los casos."""
+        for regla in reglas:
+            cursor = self.con.execute(
+                "INSERT INTO reglas (ejecucion_id, codigo, condiciones, decision, respaldo,"
+                " contraejemplos, consultas_prueba, umbrales_confirmados, confianza, estado,"
+                " texto_tecnico, texto_negocio) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (ejecucion_id, regla.codigo, json.dumps(regla.caja.condiciones(), ensure_ascii=False),
+                 regla.decision, regla.respaldo, regla.contraejemplos, regla.consultas_prueba,
+                 json.dumps(regla.umbrales_confirmados, ensure_ascii=False), regla.confianza,
+                 regla.estado, regla.texto_tecnico(), regla.texto_negocio()),
+            )
+            regla.id = int(cursor.lastrowid)
+            enlaces = [(regla.id, c, "respaldo") for c in regla.casos_respaldo]
+            enlaces += [(regla.id, c, "contraejemplo") for c in regla.casos_contraejemplo]
+            self.con.executemany("INSERT INTO regla_casos VALUES (?, ?, ?)", enlaces)
+        self.con.commit()
+
+    def reglas(self, ejecucion_id: int) -> list[dict[str, Any]]:
+        filas = self.con.execute(
+            "SELECT * FROM reglas WHERE ejecucion_id = ? ORDER BY codigo", (ejecucion_id,)
+        ).fetchall()
+        salida = []
+        for fila in filas:
+            datos = dict(fila)
+            datos["condiciones"] = json.loads(datos["condiciones"])
+            datos["umbrales_confirmados"] = json.loads(datos["umbrales_confirmados"])
+            salida.append(datos)
+        return salida
+
+    def regla(self, regla_id: int) -> dict[str, Any]:
+        fila = self.con.execute("SELECT ejecucion_id FROM reglas WHERE id = ?", (regla_id,)).fetchone()
+        if fila is None:
+            raise KeyError(f"No existe la regla {regla_id}")
+        return next(r for r in self.reglas(fila["ejecucion_id"]) if r["id"] == regla_id)
+
+    def casos_de_regla(self, regla_id: int, tipo: str | None = None) -> pd.DataFrame:
+        """Casos que respaldan o contradicen una regla, con la columna ``tipo``."""
+        consulta = ("SELECT c.*, rc.tipo FROM regla_casos rc JOIN casos c ON c.id = rc.caso_id"
+                    " WHERE rc.regla_id = ?")
+        argumentos: tuple = (regla_id,)
+        if tipo:
+            consulta += " AND rc.tipo = ?"
+            argumentos += (tipo,)
+        cursor = self.con.execute(consulta + " ORDER BY c.n_consulta", argumentos)
+        columnas = [d[0] for d in cursor.description]
+        return pd.DataFrame([tuple(f) for f in cursor.fetchall()], columns=columnas)
 
     def ejecutar(self, sql: str, parametros: Iterable[Any] = ()) -> sqlite3.Cursor:
         """Acceso de bajo nivel para los módulos de GhostMind que guardan reglas y revisiones."""

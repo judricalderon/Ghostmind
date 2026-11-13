@@ -95,6 +95,12 @@ Notas de diseño:
   como contraejemplos visibles de la regla en vez de convertirse en reglas sueltas.
 - **Alternativas**: listas de decisión o RIPPER (no están en scikit-learn); árboles sin mínimo de
   casos por hoja (los contraejemplos desaparecen y aparecen reglas de un solo caso).
+- **Aclaración de implementación (Fase 4)**: scikit-learn guarda las entradas del árbol en
+  `float32`, que no distingue enteros grandes (80.000.000 y 80.000.001 son el mismo valor). Por
+  eso cada campo numérico entra al árbol como su posición entre los valores observados, y cada
+  umbral se traduce al punto medio entre los dos valores originales que separa. Como un árbol de
+  decisión solo depende del orden de los valores, las particiones son las mismas que con los
+  valores originales. Hay una prueba con 80.000.000 contra 80.000.001.
 
 ## D7. Exploración dirigida por rondas
 
@@ -116,6 +122,11 @@ En cada ronda, con el árbol vigente:
    nuevo, las reglas son estables y el ciclo termina. También termina al agotar el presupuesto
    (20.000) o al llegar a 15 rondas. Las reglas finales son las hojas del último árbol probado.
 
+- **Aclaraciones de implementación (Fase 4)**: GhostMind recuerda cada solicitud consultada y
+  nunca la repite; la búsqueda de contraejemplos prueba cada caja de hoja una sola vez (si el
+  árbol de la ronda siguiente conserva la misma hoja, no se vuelve a probar); y un intento de
+  bisección (campo, umbral y par de casos) no se repite entre rondas. Una consulta cuenta como
+  contradicción si su decisión difiere de la que predice el árbol vigente de la ronda.
 - **Razón**: es la búsqueda dirigida que describe el informe en lugar del aprendizaje por refuerzo
   de BlackBoxToBlueprint; concentra consultas donde el comportamiento todavía no es claro.
 - **Alternativas**: aprendizaje activo por incertidumbre del modelo (no aplica bien a un árbol
@@ -129,8 +140,11 @@ En cada ronda, con el árbol vigente:
   `respaldo / (respaldo + contraejemplos)`. Ejemplos: 10 casos sin contraejemplos dan 72 %; 30 dan
   89 %; 100 dan 96 %; 100 con 2 contraejemplos dan 93 %.
 - **Estados**: `hipótesis` al nacer. `corroborada` si tiene al menos 30 casos de respaldo, ningún
-  contraejemplo y recibió al menos 20 consultas de búsqueda de contraejemplos en la ronda final sin
-  ser contradicha. `validada` y `rechazada` solo desde el catálogo.
+  contraejemplo y al menos 20 consultas de búsqueda de contraejemplos dentro de su caja sin ser
+  contradicha. `validada` y `rechazada` solo desde el catálogo. Aclaración de la Fase 4: como cada
+  caja se prueba una sola vez (D7), las consultas de prueba se cuentan en todas las rondas y no
+  solo en la final; si la ejecución no termina estable, las reglas salen de un árbol ajustado con
+  todos los casos y sus pruebas se cuentan igual.
 - **Razón**: la confianza crece con el respaldo y baja con cada contraejemplo, como pide FR-010, y
   castiga las reglas con poca evidencia.
 - **Alternativas**: proporción simple (da 100 % con un solo caso); Laplace (menos conservadora).

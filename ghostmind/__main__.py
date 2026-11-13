@@ -7,12 +7,14 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from collections import Counter
 
 import numpy as np
 
 from ghostmind.adaptador import Adaptador, ErrorDelSistema, ObjetivoDesconocido
 from ghostmind.diccionario import Diccionario
+from ghostmind.explorador import Explorador, Parametros
 from ghostmind.muestreo import PARAMETROS_POR_DEFECTO, muestreo_inicial
 from ghostmind.registro import Registro, ruta_por_defecto
 
@@ -58,10 +60,82 @@ def _orden_muestrear(args: argparse.Namespace) -> int:
     return 0
 
 
+def _porcentaje(valor: float) -> str:
+    return f"{valor * 100:5.1f} %".replace(".", ",")
+
+
+def _imprimir_reglas(reglas: list[dict]) -> None:
+    print(f"{'Código':7s} {'Decisión':16s} {'Respaldo':>8s} {'Contra':>6s} {'Confianza':>9s}  "
+          f"{'Estado':12s} Regla")
+    for r in reglas:
+        print(f"{r['codigo']:7s} {r['decision']:16s} {r['respaldo']:8d} {r['contraejemplos']:6d} "
+              f"{_porcentaje(r['confianza']):>9s}  {r['estado']:12s} {r['texto_tecnico']}")
+
+
+def _resumen_ejecucion(registro: Registro, eid: int) -> None:
+    e = registro.ejecucion(eid)
+    reglas = registro.reglas(eid)
+    estados = Counter(r["estado"] for r in reglas)
+    print(f"Ejecución {eid}: {e['tipo']} sobre '{e['objetivo']}' (semilla {e['semilla']}, "
+          f"presupuesto {e['presupuesto']})")
+    print(f"Rondas: {e['rondas']} | Consultas: {e['consultas']} | Motivo de parada: {e['motivo_parada']}")
+    detalle = ", ".join(f"{estado}: {n}" for estado, n in sorted(estados.items()))
+    print(f"Reglas: {len(reglas)} ({detalle})")
+    print()
+    _imprimir_reglas(reglas)
+
+
+def _orden_descubrir(args: argparse.Namespace) -> int:
+    dic = Diccionario.cargar()
+    registro = Registro(args.db, dic)
+    parametros = Parametros(presupuesto=args.presupuesto, max_rondas=args.max_rondas)
+    inicio = time.perf_counter()
+    try:
+        resultado = Explorador(dic, registro, args.objetivo, args.semilla, parametros).descubrir()
+    except ValueError as exc:
+        print(f"Parámetros inválidos: {exc}", file=sys.stderr)
+        registro.cerrar()
+        return 2
+    except ObjetivoDesconocido as exc:
+        print(exc, file=sys.stderr)
+        registro.cerrar()
+        return 2
+    duracion = time.perf_counter() - inicio
+    _resumen_ejecucion(registro, resultado.ejecucion_id)
+    print(f"\nTiempo de ejecución: {duracion:.1f} s")
+    registro.cerrar()
+    return 3 if resultado.motivo == "errores" else 0
+
+
+def _orden_reglas(args: argparse.Namespace) -> int:
+    registro = Registro(args.db)
+    try:
+        _resumen_ejecucion(registro, args.ejecucion)
+    except KeyError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    finally:
+        registro.cerrar()
+    return 0
+
+
 def construir_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m ghostmind",
                                      description="GhostMind IA: descubrimiento de reglas por caja negra.")
     ordenes = parser.add_subparsers(dest="orden", required=True)
+
+    descubrir = ordenes.add_parser("descubrir", help="Descubre las reglas de un sistema.")
+    descubrir.add_argument("--objetivo", default="legacy")
+    descubrir.add_argument("--semilla", type=int, default=42)
+    descubrir.add_argument("--presupuesto", type=int, default=20_000)
+    descubrir.add_argument("--max-rondas", type=int, default=15)
+    descubrir.add_argument("--db", default=str(ruta_por_defecto()))
+    descubrir.set_defaults(funcion=_orden_descubrir)
+
+    reglas = ordenes.add_parser("reglas", help="Muestra las reglas de una ejecución.")
+    reglas.add_argument("--ejecucion", type=int, required=True)
+    reglas.add_argument("--db", default=str(ruta_por_defecto()))
+    reglas.set_defaults(funcion=_orden_reglas)
 
     muestrear = ordenes.add_parser("muestrear", help="Solo el muestreo inicial (diagnóstico).")
     muestrear.add_argument("--objetivo", default="legacy")
