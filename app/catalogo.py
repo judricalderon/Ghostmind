@@ -24,10 +24,12 @@ if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
 from ghostmind import redactor_llm  # noqa: E402
-from ghostmind.adaptador import RUTA_OBJETIVOS  # noqa: E402
+from ghostmind.adaptador import ObjetivoDesconocido, listar_objetivos  # noqa: E402
 from ghostmind.catalogo import exportar, historial, revisar  # noqa: E402
-from ghostmind.verificador import Verificador  # noqa: E402
 from ghostmind.diccionario import Diccionario  # noqa: E402
+from ghostmind.explorador import Explorador, Parametros  # noqa: E402
+from ghostmind.muestreo import tamano_muestreo_inicial  # noqa: E402
+from ghostmind.verificador import Verificador  # noqa: E402
 from ghostmind.registro import Registro, ruta_por_defecto  # noqa: E402
 from ghostmind.reglas import Caja, formato_miles  # noqa: E402
 
@@ -181,6 +183,8 @@ def seccion_reglas(registro: Registro, dic: Diccionario, reglas: list[dict], fil
 
     st.subheader("Detalle de la regla")
     por_codigo = {r["codigo"]: r for r in filtradas}
+    if "regla" in st.session_state and st.session_state["regla"] not in por_codigo:
+        del st.session_state["regla"]  # la regla elegida no existe en esta ejecución o en estos filtros
     pedida = st.query_params.get("regla")
     if "regla" not in st.session_state and pedida in por_codigo:
         st.session_state["regla"] = pedida
@@ -308,7 +312,7 @@ def seccion_convergencia(registro: Registro, dic: Diccionario, eid: int) -> None
 def seccion_verificacion(registro: Registro, dic: Diccionario, eid: int, reglas: list[dict]) -> None:
     st.markdown("Repite los casos registrados en este descubrimiento sobre otra versión del sistema y "
                 "muestra en qué reglas cambian las decisiones.")
-    objetivos = list(json.loads(RUTA_OBJETIVOS.read_text(encoding="utf-8")))
+    objetivos = list(listar_objetivos())
     c1, c2 = st.columns([3, 1], vertical_alignment="bottom")
     objetivo = c1.selectbox("Versión a comparar", objetivos, key="objetivo_verificacion",
                             index=objetivos.index("modernizado") if "modernizado" in objetivos else 0)
@@ -376,14 +380,65 @@ def seccion_verificacion(registro: Registro, dic: Diccionario, eid: int, reglas:
         st.dataframe(vista.rename(columns=nombres), hide_index=True, width="stretch")
 
 
+def tabla_campos(dic: Diccionario) -> pd.DataFrame:
+    """Lo único que GhostMind sabe de la caja negra: nombre, tipo y rango de cada campo."""
+    filas = []
+    for campo in dic.campos:
+        if campo.es_numerico:
+            valores = f"{formato_miles(campo.minimo)} a {formato_miles(campo.maximo)} {campo.unidad or ''}".strip()
+        else:
+            valores = ", ".join(campo.etiqueta_valor(v) for v in campo.nombres_valores)
+        filas.append({"Campo": campo.etiqueta.capitalize(), "Valores posibles": valores})
+    return pd.DataFrame(filas)
+
+
+def seccion_nuevo_descubrimiento(registro: Registro, dic: Diccionario, hay_ejecuciones: bool) -> None:
+    """Barra lateral: elegir la caja negra y lanzar un descubrimiento (FR-028)."""
+    objetivos = listar_objetivos()
+    with st.sidebar.expander("Nuevo descubrimiento", expanded=not hay_ejecuciones, icon=":material/travel_explore:"):
+        st.caption("Elige la caja negra que GhostMind va a descifrar. Solo la consulta por el adaptador: "
+                   "no lee su código.")
+        objetivo = st.selectbox("Caja negra", list(objetivos), key="nuevo_objetivo")
+        if objetivos[objetivo]:
+            st.caption(objetivos[objetivo])
+        st.markdown("**Lo que GhostMind conoce de ella**")
+        st.markdown("\n".join(f"- **{fila['Campo']}**: {fila['Valores posibles']}"
+                              for fila in tabla_campos(dic).to_dict("records")))
+        st.number_input("Semilla", min_value=0, max_value=1_000_000, value=42, step=1, key="nuevo_semilla",
+                        help="La misma semilla repite exactamente las mismas consultas y reglas.")
+        st.number_input("Presupuesto de consultas", min_value=tamano_muestreo_inicial(dic), max_value=200_000,
+                        value=20_000, step=1_000, key="nuevo_presupuesto",
+                        help="Máximo de consultas a la caja negra; el muestreo inicial usa 720.")
+        if st.button("Descubrir reglas", key="nuevo_descubrir", type="primary", width="stretch"):
+            semilla = int(st.session_state["nuevo_semilla"])
+            presupuesto = int(st.session_state["nuevo_presupuesto"])
+            try:
+                with st.spinner(f"Consultando '{objetivo}'..."):
+                    resultado = Explorador(dic, registro, objetivo, semilla,
+                                           Parametros(presupuesto=presupuesto)).descubrir()
+            except (ValueError, ObjetivoDesconocido) as exc:
+                st.error(f"No se pudo descubrir: {exc}")
+                return
+            st.session_state["ejecucion"] = resultado.ejecucion_id
+            st.session_state.pop("regla", None)
+            tipo = "aviso" if resultado.motivo == "errores" else "ok"
+            st.session_state["mensaje"] = (
+                tipo, f"Descubrimiento #{resultado.ejecucion_id} sobre '{objetivo}' (semilla {semilla}): "
+                      f"{len(resultado.reglas)} reglas con {formato_miles(resultado.consultas)} consultas; "
+                      f"motivo de parada: {MOTIVOS.get(resultado.motivo, resultado.motivo).lower()}.")
+            st.rerun()
+
+
 def principal(registro: Registro, dic: Diccionario, ruta: Path) -> None:
     st.title("GhostMind IA")
     st.caption("Catálogo de reglas de negocio descubiertas observando el sistema legacy como caja negra. "
                "Ninguna regla se acepta sola: el especialista valida o rechaza cada una.")
     ejecuciones = registro.ejecuciones("descubrimiento")
+    seccion_nuevo_descubrimiento(registro, dic, hay_ejecuciones=bool(ejecuciones))
     if not ejecuciones:
-        st.info(f"Todavía no hay ejecuciones de descubrimiento en `{ruta}`. Para crear una, ejecuta en la "
-                "raíz del repositorio: `python -m ghostmind descubrir --objetivo legacy --semilla 42`")
+        st.info(f"Todavía no hay ejecuciones de descubrimiento en `{ruta.name}`. Elige una caja negra en "
+                "**Nuevo descubrimiento** (barra lateral) y pulsa *Descubrir reglas*, o ejecuta en la raíz del "
+                "repositorio: `python -m ghostmind descubrir --objetivo legacy --semilla 42`")
         st.stop()
 
     por_id = {e["id"]: e for e in ejecuciones}

@@ -190,6 +190,22 @@ métricas.
 
 ---
 
+## Fase 8: Selección de la caja negra desde el catálogo (agregada el 2026-11-13)
+
+**Objetivo**: que el usuario elija qué sistema descifrar y lance el descubrimiento sin usar la
+terminal (FR-028, FR-029). No cambia reglas plantadas, alteraciones, métricas ni resultados.
+
+- [X] T057 [P] Pruebas en `tests/test_adaptador.py`: `sistemas/objetivos.json` acepta el formato con descripción y el formato anterior; `listar_objetivos()` devuelve nombre y descripción
+- [X] T058 [P] Pruebas en `tests/test_app.py`: con la base vacía se puede elegir la caja negra y descubrir; con ejecuciones previas, la ejecución nueva queda seleccionada
+- [X] T059 Agregar descripción a cada objetivo en `sistemas/objetivos.json` y `listar_objetivos()` en `ghostmind/adaptador.py`; actualizar contracts/diccionario.md
+- [X] T060 Orden `python -m ghostmind objetivos` en `ghostmind/__main__.py`; actualizar contracts/cli.md
+- [X] T061 Sección "Nuevo descubrimiento" en la barra lateral de `app/catalogo.py`: caja negra, campos conocidos, semilla, presupuesto y botón
+- [X] T062 Actualizar `README.md` y revisar la sección en el navegador
+
+**Punto de control**: se puede descubrir cualquier caja negra registrada desde el catálogo.
+
+---
+
 ## Dependencias y orden de ejecución
 
 ### Dependencias entre fases

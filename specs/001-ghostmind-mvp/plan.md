@@ -149,6 +149,7 @@ su alcance y una prueba lo comprueba.
 | 5 | Catálogo en Streamlit, revisiones, exportación JSON, redacción opcional | US2 | Aprobar, rechazar y exportar funcionan y persisten |
 | 6 | Versión modernizada, verificador, pestaña de verificación | US3 | Cero diferencias contra el legacy y diferencias contra el modernizado |
 | 7 | Métricas, experimento, robustez, instrumento C4, capturas, README | US4 | `resultados/` generado por ejecución real |
+| 8 | Elegir la caja negra y descubrir desde el catálogo (agregada el 2026-11-13) | US1 y US2 | Descubrimiento lanzado desde la interfaz, con pruebas |
 
 ## Seguimiento de complejidad
 

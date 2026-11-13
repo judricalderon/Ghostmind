@@ -12,7 +12,7 @@ from collections import Counter
 
 import numpy as np
 
-from ghostmind.adaptador import Adaptador, ErrorDelSistema, ObjetivoDesconocido
+from ghostmind.adaptador import Adaptador, ErrorDelSistema, ObjetivoDesconocido, listar_objetivos
 from ghostmind.catalogo import exportar_json
 from ghostmind.diccionario import Diccionario
 from ghostmind.explorador import Explorador, Parametros
@@ -161,10 +161,20 @@ def _orden_verificar(args: argparse.Namespace) -> int:
     return 0
 
 
+def _orden_objetivos(args: argparse.Namespace) -> int:
+    print("Cajas negras disponibles (sistemas/objetivos.json); úsalas con --objetivo:")
+    for nombre, descripcion in listar_objetivos().items():
+        print(f"  {nombre:14s} {descripcion}")
+    return 0
+
+
 def construir_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m ghostmind",
                                      description="GhostMind IA: descubrimiento de reglas por caja negra.")
     ordenes = parser.add_subparsers(dest="orden", required=True)
+
+    objetivos = ordenes.add_parser("objetivos", help="Lista las cajas negras disponibles.")
+    objetivos.set_defaults(funcion=_orden_objetivos)
 
     descubrir = ordenes.add_parser("descubrir", help="Descubre las reglas de un sistema.")
     descubrir.add_argument("--objetivo", default="legacy")

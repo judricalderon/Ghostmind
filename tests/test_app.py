@@ -83,3 +83,34 @@ def test_verificacion_desde_la_interfaz(base_con_ejecucion, dic):
     reg.cerrar()
     tablas = [d.value for d in at.dataframe if "Diferencias" in d.value.columns]
     assert tablas and tablas[0]["Diferencias"].sum() > 0
+
+
+def test_descubrir_desde_la_interfaz_con_base_vacia(tmp_path, monkeypatch, dic):
+    ruta = tmp_path / "vacia.sqlite"
+    monkeypatch.setenv("GHOSTMIND_DB", str(ruta))
+    at = abrir_app()
+    assert at.selectbox(key="nuevo_objetivo").value == "legacy"
+    at.number_input(key="nuevo_presupuesto").set_value(3000)
+    at.button(key="nuevo_descubrir").click().run()
+    assert not at.exception, at.exception
+    reg = Registro(ruta, dic)
+    ejecuciones = reg.ejecuciones("descubrimiento")
+    reg.cerrar()
+    assert [(e["objetivo"], e["semilla"], e["presupuesto"]) for e in ejecuciones] == [("legacy", 42, 3000)]
+    assert at.dataframe and "Código" in at.dataframe[0].value.columns
+
+
+def test_la_ejecucion_nueva_queda_seleccionada(base_con_ejecucion, dic):
+    ruta, resultado = base_con_ejecucion
+    at = abrir_app()
+    at.selectbox(key="nuevo_objetivo").select("modernizado")
+    at.number_input(key="nuevo_semilla").set_value(7)
+    at.number_input(key="nuevo_presupuesto").set_value(2000)
+    at.button(key="nuevo_descubrir").click().run()
+    assert not at.exception, at.exception
+    reg = Registro(ruta, dic)
+    nueva = reg.ejecuciones("descubrimiento")[-1]
+    reg.cerrar()
+    assert nueva["id"] != resultado.ejecucion_id
+    assert (nueva["objetivo"], nueva["semilla"]) == ("modernizado", 7)
+    assert at.selectbox(key="ejecucion").value == nueva["id"]

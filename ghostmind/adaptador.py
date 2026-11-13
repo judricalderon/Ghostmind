@@ -32,12 +32,29 @@ class ObjetivoDesconocido(KeyError):
     """El nombre de objetivo no está en ``sistemas/objetivos.json``."""
 
 
+def _leer_objetivos(ruta_objetivos: Path | str) -> dict[str, dict[str, str]]:
+    """Lee la lista de cajas negras; acepta el valor como texto (formato anterior) o como objeto."""
+    crudos = json.loads(Path(ruta_objetivos).read_text(encoding="utf-8"))
+    objetivos = {}
+    for nombre, valor in crudos.items():
+        if isinstance(valor, str):
+            valor = {"punto_de_entrada": valor, "descripcion": ""}
+        objetivos[nombre] = {"punto_de_entrada": valor["punto_de_entrada"],
+                             "descripcion": valor.get("descripcion", "")}
+    return objetivos
+
+
+def listar_objetivos(ruta_objetivos: Path | str = RUTA_OBJETIVOS) -> dict[str, str]:
+    """Cajas negras disponibles (nombres válidos para ``--objetivo``) con su descripción."""
+    return {nombre: datos["descripcion"] for nombre, datos in _leer_objetivos(ruta_objetivos).items()}
+
+
 def resolver_objetivo(nombre: str, ruta_objetivos: Path | str = RUTA_OBJETIVOS) -> PuntoDeEntrada:
     """Obtiene el punto de entrada declarado para un objetivo, sin leer su código."""
-    objetivos = json.loads(Path(ruta_objetivos).read_text(encoding="utf-8"))
+    objetivos = _leer_objetivos(ruta_objetivos)
     if nombre not in objetivos:
         raise ObjetivoDesconocido(f"Objetivo desconocido: {nombre!r}. Opciones: {sorted(objetivos)}")
-    modulo, funcion = objetivos[nombre].split(":")
+    modulo, funcion = objetivos[nombre]["punto_de_entrada"].split(":")
     return getattr(importlib.import_module(modulo), funcion)
 
 

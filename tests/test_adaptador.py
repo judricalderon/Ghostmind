@@ -99,3 +99,30 @@ def test_consultas_coinciden_con_el_registro(registro, dic, solicitud_base):
     for puntaje in range(380, 420):
         adaptador.consultar(dict(solicitud_base, puntaje_credito=puntaje), ronda=1, origen="biseccion")
     assert adaptador.consultas == registro.contar_casos(eid) == 40
+
+
+def test_listar_objetivos_con_descripcion():
+    from ghostmind.adaptador import listar_objetivos
+
+    objetivos = listar_objetivos()
+    assert list(objetivos) == ["legacy", "modernizado"]
+    assert all(descripcion for descripcion in objetivos.values())
+
+
+def test_formato_anterior_de_objetivos(tmp_path):
+    import json
+
+    from ghostmind.adaptador import listar_objetivos
+
+    ruta = tmp_path / "objetivos.json"
+    ruta.write_text(json.dumps({"legacy": "legacy.crdapr01:CRDAPR01"}), encoding="utf-8")
+    assert callable(resolver_objetivo("legacy", ruta))
+    assert listar_objetivos(ruta) == {"legacy": ""}
+
+
+def test_orden_objetivos(capsys):
+    from ghostmind.__main__ import main
+
+    assert main(["objetivos"]) == 0
+    salida = capsys.readouterr().out
+    assert "legacy" in salida and "modernizado" in salida

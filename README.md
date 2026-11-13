@@ -111,6 +111,8 @@ python -m pytest
 python -m ghostmind descubrir --objetivo legacy --semilla 42 --presupuesto 20000
 ```
 
+`--objetivo` es la caja negra que se va a descifrar. Las disponibles están en
+`sistemas/objetivos.json` (`legacy` y `modernizado`) y se listan con `python -m ghostmind objetivos`.
 La evidencia queda en `datos/ghostmind.sqlite` (se cambia con `--db` o la variable `GHOSTMIND_DB`).
 Para volver a ver las reglas de una ejecución: `python -m ghostmind reglas --ejecucion 1`.
 
@@ -120,10 +122,16 @@ Para volver a ver las reglas de una ejecución: `python -m ghostmind reglas --ej
 streamlit run app/catalogo.py
 ```
 
-Muestra las reglas con su redacción de negocio, condiciones, umbrales confirmados, confianza, estado y
-evidencia; permite validar o rechazar cada regla con una nota y descargar el catálogo en JSON. Las
-pestañas Convergencia y Verificación muestran cómo avanzó el descubrimiento y el resultado de la
-verificación. Se puede abrir directo una ejecución y una regla con `?ejecucion=1&regla=GM-05`.
+En la barra lateral, **Nuevo descubrimiento** permite elegir la caja negra, ver los campos que GhostMind
+conoce de ella, fijar la semilla y el presupuesto, y lanzar el descubrimiento sin usar la terminal; al
+terminar, el catálogo abre la ejecución nueva. El catálogo muestra las reglas con su redacción de negocio,
+condiciones, umbrales confirmados, confianza, estado y evidencia; permite validar o rechazar cada regla con
+una nota y descargar el catálogo en JSON. Las pestañas Convergencia y Verificación muestran cómo avanzó el
+descubrimiento y el resultado de la verificación. Se puede abrir directo una ejecución y una regla con
+`?ejecucion=1&regla=GM-05`.
+
+Para descifrar otra caja negra con los mismos campos basta agregar su punto de entrada en
+`sistemas/objetivos.json`; si sus campos son distintos, necesita además su propio diccionario.
 
 **4. Verificar la versión modernizada**:
 

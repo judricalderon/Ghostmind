@@ -45,6 +45,14 @@ streamlit run app/catalogo.py
 
 Abre el catálogo y el reporte de verificación en el navegador. Variables opcionales:
 `GHOSTMIND_DB` (ruta de la base), `GHOSTMIND_LLM=1` y `ANTHROPIC_API_KEY` (redacción opcional).
+Desde la Fase 8, la sección "Nuevo descubrimiento" de la barra lateral permite elegir la caja negra,
+la semilla y el presupuesto, y lanzar el descubrimiento.
+
+```bash
+python -m ghostmind objetivos
+```
+
+Lista las cajas negras disponibles (nombres válidos para `--objetivo`) con su descripción.
 
 ## Evaluación (fuera de GhostMind)
 

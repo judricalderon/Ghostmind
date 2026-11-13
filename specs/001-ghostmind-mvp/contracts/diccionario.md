@@ -50,11 +50,22 @@ registro ni la validación.
 CRDAPR01(WK_REG: str) -> str   # devuelve "APROBADO", "RECHAZADO" o "REVISION_MANUAL"
 ```
 
-`sistemas/objetivos.json` asocia cada nombre de objetivo con su punto de entrada:
+`sistemas/objetivos.json` es la lista de cajas negras disponibles: asocia cada nombre con su punto
+de entrada y una descripción para el usuario (Fase 8). También se acepta el formato anterior, en el
+que el valor es solo el punto de entrada.
 
 ```json
 {
-  "legacy": "legacy.crdapr01:CRDAPR01",
-  "modernizado": "legacy.crdapr_moderno:CRDAPR01"
+  "legacy": {
+    "punto_de_entrada": "legacy.crdapr01:CRDAPR01",
+    "descripcion": "Módulo legacy CRDAPR01 de aprobación de créditos (el sistema a modernizar)."
+  },
+  "modernizado": {
+    "punto_de_entrada": "legacy.crdapr_moderno:CRDAPR01",
+    "descripcion": "Versión modernizada del mismo módulo, con el mismo registro de entrada."
+  }
 }
 ```
+
+Para descifrar otra caja negra con los mismos campos basta agregar una entrada. Un sistema con
+campos distintos necesita además su propio diccionario.

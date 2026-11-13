@@ -240,6 +240,14 @@ semilla.
 - **FR-027**: El README debe explicar cómo instalar y ejecutar cada parte y ofrecer una alternativa
   de demostración (capturas y guion de video).
 
+**Selección de la caja negra (agregado el 2026-11-13, Fase 8)**
+
+- **FR-028**: El catálogo debe permitir elegir la caja negra entre los sistemas registrados, con su
+  descripción y los campos que GhostMind conoce de ella, fijar la semilla y el presupuesto, y lanzar
+  un descubrimiento. Al terminar, el catálogo abre la ejecución nueva. Debe funcionar también cuando
+  todavía no hay ejecuciones.
+- **FR-029**: La línea de comandos debe listar las cajas negras disponibles con su descripción.
+
 ### Entidades clave
 
 - **Diccionario de campos**: nombre, tipo (entero o categórico), rango o valores permitidos de cada

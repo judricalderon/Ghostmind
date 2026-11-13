@@ -1,4 +1,10 @@
 {
-  "legacy": "legacy.crdapr01:CRDAPR01",
-  "modernizado": "legacy.crdapr_moderno:CRDAPR01"
+  "legacy": {
+    "punto_de_entrada": "legacy.crdapr01:CRDAPR01",
+    "descripcion": "Módulo legacy CRDAPR01 de aprobación de créditos: el sistema que se quiere modernizar y cuyas reglas nadie documentó."
+  },
+  "modernizado": {
+    "punto_de_entrada": "legacy.crdapr_moderno:CRDAPR01",
+    "descripcion": "Versión modernizada del mismo módulo, con el mismo registro de entrada. Se usa sobre todo para la verificación diferencial."
+  }
 }
