@@ -1,0 +1,10 @@
+[project]
+name = "ghostmind-prototipo"
+version = "0.1.0"
+description = "MVP de GhostMind IA: descubrimiento de reglas de negocio ocultas en un sistema legacy observado como caja negra"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

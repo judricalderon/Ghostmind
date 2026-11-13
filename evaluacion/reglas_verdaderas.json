@@ -1,0 +1,92 @@
+{
+  "version": "1.0",
+  "sistema": "CRDAPR01",
+  "nota": "Reglas plantadas en el legacy simulado (research.md, D4). Solo las lee la evaluacion. Se evaluan en orden; decide la primera que se cumple. Limites enteros inclusivos; un limite omitido es el del dominio.",
+  "decision_por_defecto": "APROBADO",
+  "reglas": [
+    {
+      "id": "R01",
+      "tipo": "fosil",
+      "descripcion": "El convenio C-77 siempre aprueba (convenio antiguo que nunca se retiro).",
+      "condiciones": {"codigo_convenio": {"valores": ["C-77"]}},
+      "decision": "APROBADO"
+    },
+    {
+      "id": "R02",
+      "tipo": "general",
+      "descripcion": "Se rechazan los solicitantes menores de 21 anos.",
+      "condiciones": {"edad": {"max": 20}},
+      "decision": "RECHAZADO"
+    },
+    {
+      "id": "R03",
+      "tipo": "excepcion_rara",
+      "descripcion": "Independientes del convenio C-45 que piden entre 48 y 50 millones van a revision manual.",
+      "condiciones": {
+        "tipo_empleo": {"valores": ["INDEPENDIENTE"]},
+        "codigo_convenio": {"valores": ["C-45"]},
+        "monto": {"min": 48000000, "max": 50000000}
+      },
+      "decision": "REVISION_MANUAL"
+    },
+    {
+      "id": "R04",
+      "tipo": "general",
+      "descripcion": "Se rechaza un puntaje de credito menor que 400.",
+      "condiciones": {"puntaje_credito": {"max": 399}},
+      "decision": "RECHAZADO"
+    },
+    {
+      "id": "R05",
+      "tipo": "excepcion",
+      "descripcion": "Excepcion de R06: un desempleado con 120 meses o mas de antiguedad va a revision manual.",
+      "condiciones": {
+        "tipo_empleo": {"valores": ["DESEMPLEADO"]},
+        "antiguedad_meses": {"min": 120}
+      },
+      "decision": "REVISION_MANUAL"
+    },
+    {
+      "id": "R06",
+      "tipo": "general",
+      "descripcion": "Se rechazan los desempleados.",
+      "condiciones": {"tipo_empleo": {"valores": ["DESEMPLEADO"]}},
+      "decision": "RECHAZADO"
+    },
+    {
+      "id": "R07",
+      "tipo": "general",
+      "descripcion": "Se rechaza un ingreso menor que 1.500.000, salvo con libranza C-12.",
+      "condiciones": {
+        "ingreso_mensual": {"max": 1499999},
+        "codigo_convenio": {"valores": ["NINGUNO", "C-31", "C-45", "C-77"]}
+      },
+      "decision": "RECHAZADO"
+    },
+    {
+      "id": "R08",
+      "tipo": "excepcion",
+      "descripcion": "Excepcion de R09: montos altos con puntaje de 800 o mas y 60 meses o mas de antiguedad se aprueban.",
+      "condiciones": {
+        "monto": {"min": 80000001},
+        "puntaje_credito": {"min": 800},
+        "antiguedad_meses": {"min": 60}
+      },
+      "decision": "APROBADO"
+    },
+    {
+      "id": "R09",
+      "tipo": "general",
+      "descripcion": "Los montos mayores que 80.000.000 van a revision manual.",
+      "condiciones": {"monto": {"min": 80000001}},
+      "decision": "REVISION_MANUAL"
+    },
+    {
+      "id": "R10",
+      "tipo": "general",
+      "descripcion": "Un puntaje de credito menor que 550 va a revision manual.",
+      "condiciones": {"puntaje_credito": {"max": 549}},
+      "decision": "REVISION_MANUAL"
+    }
+  ]
+}

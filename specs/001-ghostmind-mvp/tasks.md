@@ -45,18 +45,18 @@ conoce la evaluación. Bloquea todas las historias.
 
 ### Pruebas de la Fase 2
 
-- [ ] T007 [P] Pruebas del diccionario en `tests/test_diccionario.py`: nombres únicos, `minimo` ≤ `maximo`, campos sin traslape en las 35 posiciones, códigos que caben en su longitud, armado y lectura del registro de ancho fijo (ejemplo de contracts/diccionario.md)
-- [ ] T008 [P] Pruebas del legacy en `tests/test_legacy.py`: solo devuelve `APROBADO`, `RECHAZADO` o `REVISION_MANUAL`; coincide con el evaluador declarativo en 50.000 solicitudes uniformes (semilla fija) y en todas las combinaciones de valores límite y categorías; cada regla R01 a R10 tiene al menos un caso propio; la fracción efectiva de R03 es menor que 0,1 %
-- [ ] T009 [P] Pruebas del evaluador declarativo en `tests/test_verdad.py`: precedencia, comportamiento por defecto, identificación de la regla que decide, y ejemplos escritos a mano para cada regla
+- [X] T007 [P] Pruebas del diccionario en `tests/test_diccionario.py`: nombres únicos, `minimo` ≤ `maximo`, campos sin traslape en las 35 posiciones, códigos que caben en su longitud, armado y lectura del registro de ancho fijo (ejemplo de contracts/diccionario.md)
+- [X] T008 [P] Pruebas del legacy en `tests/test_legacy.py`: solo devuelve `APROBADO`, `RECHAZADO` o `REVISION_MANUAL`; coincide con el evaluador declarativo en 50.000 solicitudes uniformes (semilla fija) y en todas las combinaciones de valores límite y categorías; cada regla R01 a R10 tiene al menos un caso propio; la fracción efectiva de R03 es menor que 0,1 %
+- [X] T009 [P] Pruebas del evaluador declarativo en `tests/test_verdad.py`: precedencia, comportamiento por defecto, identificación de la regla que decide, y ejemplos escritos a mano para cada regla
 
 ### Implementación de la Fase 2
 
-- [ ] T010 [P] Crear `sistemas/diccionario_credito.json` y `sistemas/objetivos.json` según contracts/diccionario.md (8 campos, rangos de D3, registro de 35 posiciones)
-- [ ] T011 [P] Implementar `ghostmind/diccionario.py`: cargar y validar el diccionario, solicitudes válidas, armar y leer el registro de ancho fijo
-- [ ] T012 [P] Implementar el legacy en `legacy/crdapr01.py` con estilo antiguo (condicionales anidados, nombres crípticos, números fijos), punto de entrada `CRDAPR01(WK_REG)` y las 10 reglas de D4 en su orden de precedencia
-- [ ] T013 [P] Crear `evaluacion/reglas_verdaderas.json` con R01 a R10 en formato de caja y la decisión por defecto `APROBADO` (data-model.md, sección 4)
-- [ ] T014 Implementar `evaluacion/verdad.py`: evaluador declarativo que devuelve la decisión y la regla que decide (depende de T013)
-- [ ] T015 Medir y registrar en la salida de la prueba la fracción efectiva de cada regla con muestreo uniforme (en `tests/test_legacy.py`)
+- [X] T010 [P] Crear `sistemas/diccionario_credito.json` y `sistemas/objetivos.json` según contracts/diccionario.md (8 campos, rangos de D3, registro de 35 posiciones)
+- [X] T011 [P] Implementar `ghostmind/diccionario.py`: cargar y validar el diccionario, solicitudes válidas, armar y leer el registro de ancho fijo
+- [X] T012 [P] Implementar el legacy en `legacy/crdapr01.py` con estilo antiguo (condicionales anidados, nombres crípticos, números fijos), punto de entrada `CRDAPR01(WK_REG)` y las 10 reglas de D4 en su orden de precedencia
+- [X] T013 [P] Crear `evaluacion/reglas_verdaderas.json` con R01 a R10 en formato de caja y la decisión por defecto `APROBADO` (data-model.md, sección 4)
+- [X] T014 Implementar `evaluacion/verdad.py`: evaluador declarativo que devuelve la decisión y la regla que decide (depende de T013)
+- [X] T015 Medir y registrar en la salida de la prueba la fracción efectiva de cada regla con muestreo uniforme (en `tests/test_legacy.py`)
 
 **Punto de control**: `python -m pytest` pasa; legacy y reglas verdaderas coinciden.
 
