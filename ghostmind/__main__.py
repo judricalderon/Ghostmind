@@ -13,6 +13,7 @@ from collections import Counter
 import numpy as np
 
 from ghostmind.adaptador import Adaptador, ErrorDelSistema, ObjetivoDesconocido
+from ghostmind.catalogo import exportar_json
 from ghostmind.diccionario import Diccionario
 from ghostmind.explorador import Explorador, Parametros
 from ghostmind.muestreo import PARAMETROS_POR_DEFECTO, muestreo_inicial
@@ -119,6 +120,19 @@ def _orden_reglas(args: argparse.Namespace) -> int:
     return 0
 
 
+def _orden_exportar(args: argparse.Namespace) -> int:
+    registro = Registro(args.db)
+    try:
+        ruta = exportar_json(registro, args.ejecucion, args.salida)
+    except KeyError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    finally:
+        registro.cerrar()
+    print(f"Catálogo de la ejecución {args.ejecucion} exportado en {ruta}")
+    return 0
+
+
 def construir_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m ghostmind",
                                      description="GhostMind IA: descubrimiento de reglas por caja negra.")
@@ -136,6 +150,12 @@ def construir_parser() -> argparse.ArgumentParser:
     reglas.add_argument("--ejecucion", type=int, required=True)
     reglas.add_argument("--db", default=str(ruta_por_defecto()))
     reglas.set_defaults(funcion=_orden_reglas)
+
+    exportar = ordenes.add_parser("exportar", help="Exporta el catálogo de una ejecución a JSON.")
+    exportar.add_argument("--ejecucion", type=int, required=True)
+    exportar.add_argument("--salida", required=True)
+    exportar.add_argument("--db", default=str(ruta_por_defecto()))
+    exportar.set_defaults(funcion=_orden_exportar)
 
     muestrear = ordenes.add_parser("muestrear", help="Solo el muestreo inicial (diagnóstico).")
     muestrear.add_argument("--objetivo", default="legacy")

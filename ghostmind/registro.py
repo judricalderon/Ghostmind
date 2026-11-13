@@ -333,6 +333,27 @@ class Registro:
         columnas = [d[0] for d in cursor.description]
         return pd.DataFrame([tuple(f) for f in cursor.fetchall()], columns=columnas)
 
+    # Revisiones del especialista y redacción opcional
+
+    def guardar_revision(self, regla_id: int, decision: str, nota: str | None) -> None:
+        """Registra la decisión del especialista y actualiza el estado de la regla."""
+        self.con.execute(
+            "INSERT INTO revisiones (regla_id, decision, nota, momento) VALUES (?, ?, ?, ?)",
+            (regla_id, decision, nota, ahora()),
+        )
+        self.con.execute("UPDATE reglas SET estado = ? WHERE id = ?", (decision, regla_id))
+        self.con.commit()
+
+    def revisiones(self, regla_id: int) -> list[dict[str, Any]]:
+        filas = self.con.execute(
+            "SELECT decision, nota, momento FROM revisiones WHERE regla_id = ? ORDER BY id", (regla_id,)
+        ).fetchall()
+        return [dict(f) for f in filas]
+
+    def guardar_texto_llm(self, regla_id: int, texto: str) -> None:
+        self.con.execute("UPDATE reglas SET texto_llm = ? WHERE id = ?", (texto, regla_id))
+        self.con.commit()
+
     def ejecutar(self, sql: str, parametros: Iterable[Any] = ()) -> sqlite3.Cursor:
         """Acceso de bajo nivel para los módulos de GhostMind que guardan reglas y revisiones."""
         return self.con.execute(sql, tuple(parametros))

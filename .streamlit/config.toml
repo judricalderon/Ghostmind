@@ -1,0 +1,8 @@
+[theme]
+# Tema claro fijo para que las capturas del informe sean legibles impresas.
+# Azul como color principal: el rojo por defecto se confundía con la decisión RECHAZADO.
+base = "light"
+primaryColor = "#2a78d6"
+
+[browser]
+gatherUsageStats = false

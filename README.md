@@ -15,7 +15,7 @@ En construcción por fases con un proceso dirigido por especificaciones ([Spec K
 | 2 | Sistema legacy simulado y reglas verdaderas | Lista |
 | 3 | Adaptador, explorador (muestreo inicial) y registro SQLite | Lista |
 | 4 | Extractor de reglas, umbrales y confianza | Lista |
-| 5 | Catálogo en Streamlit | Pendiente |
+| 5 | Catálogo en Streamlit | Lista |
 | 6 | Versión modernizada y verificador diferencial | Pendiente |
 | 7 | Evaluación del experimento y resultados | Pendiente |
 
@@ -60,13 +60,36 @@ python -m ghostmind reglas --ejecucion 1
 
 La base de evidencia queda en `datos/ghostmind.sqlite`; se puede cambiar con `--db` o con la variable `GHOSTMIND_DB`.
 
+## Catálogo para el especialista (disponible desde la fase 5)
+
+```bash
+streamlit run app/catalogo.py
+```
+
+Muestra las reglas de cada ejecución con su redacción de negocio, condiciones, umbrales confirmados, confianza, estado y evidencia (casos que la respaldan y contraejemplos). El especialista valida o rechaza cada regla con una nota, y el catálogo se descarga en JSON. También se puede exportar desde la terminal:
+
+```bash
+python -m ghostmind exportar --ejecucion 1 --salida catalogo.json
+```
+
+### Redacción con modelo de lenguaje (opcional, desactivada por defecto)
+
+GhostMind puede pedir a Claude una redacción más natural de cada regla. Nunca cambia condiciones ni decisiones, y si la redacción menciona valores que no están en la regla o cambia la decisión, se descarta y se mantiene la redacción por plantilla. Para activarla:
+
+```bash
+pip install -r requirements-llm.txt
+```
+
+Luego define las variables de entorno `GHOSTMIND_LLM=1` y `ANTHROPIC_API_KEY` (la llave nunca se guarda en el repositorio). Opcionalmente, `GHOSTMIND_LLM_MODELO` cambia el modelo (por defecto `claude-opus-5-5`).
+
 ## Estructura actual
 
 | Carpeta | Contenido |
 |---------|-----------|
 | `sistemas/` | Diccionario de campos y puntos de entrada: lo único que GhostMind conoce del sistema |
 | `legacy/` | Sistema legacy simulado de aprobación de créditos (GhostMind no lo lee) |
-| `ghostmind/` | El producto: diccionario, adaptador, registro SQLite, muestreo, extractor y explorador |
+| `ghostmind/` | El producto: diccionario, adaptador, registro SQLite, muestreo, extractor, explorador, catálogo y redacción opcional |
+| `app/` | Interfaz del catálogo en Streamlit |
 | `evaluacion/` | Reglas verdaderas y evaluador; solo los usa la evaluación del experimento |
 | `tests/` | Pruebas automáticas |
 

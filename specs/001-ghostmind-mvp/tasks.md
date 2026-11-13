@@ -125,16 +125,16 @@ exportar a JSON.
 
 ### Pruebas de la Fase 5
 
-- [ ] T034 [P] [US2] Pruebas del catálogo en `tests/test_catalogo.py`: revisiones solo `validada` o `rechazada`, historial en `revisiones`, estado persistente, exportación con el formato de contracts/catalogo-json.md
-- [ ] T035 [P] [US2] Pruebas de la interfaz en `tests/test_app.py` con `streamlit.testing.v1.AppTest`: carga sin ejecuciones (mensaje de ayuda), lista de reglas, filtros, aprobar y rechazar
-- [ ] T036 [P] [US2] Pruebas del redactor opcional en `tests/test_redactor_llm.py`: desactivado por defecto; sin llave usa la plantilla; nunca altera condiciones ni decisión (con un cliente simulado, sin red)
+- [X] T034 [P] [US2] Pruebas del catálogo en `tests/test_catalogo.py`: revisiones solo `validada` o `rechazada`, historial en `revisiones`, estado persistente, exportación con el formato de contracts/catalogo-json.md
+- [X] T035 [P] [US2] Pruebas de la interfaz en `tests/test_app.py` con `streamlit.testing.v1.AppTest`: carga sin ejecuciones (mensaje de ayuda), lista de reglas, filtros, aprobar y rechazar
+- [X] T036 [P] [US2] Pruebas del redactor opcional en `tests/test_redactor_llm.py`: desactivado por defecto; sin llave usa la plantilla; nunca altera condiciones ni decisión (con un cliente simulado, sin red)
 
 ### Implementación de la Fase 5
 
-- [ ] T037 [P] [US2] Implementar `ghostmind/catalogo.py`: registrar revisiones y exportar JSON (FR-016, FR-017)
-- [ ] T038 [US2] Implementar `app/catalogo.py` en Streamlit: selector de ejecución, resumen, tabla de reglas con filtros por decisión, estado y confianza, detalle con condiciones, umbrales confirmados y muestra de casos, botones de aprobar y rechazar con nota, descarga de JSON (FR-014 a FR-017)
-- [ ] T039 [US2] Implementar `ghostmind/redactor_llm.py` con el SDK de Anthropic, activado solo con `GHOSTMIND_LLM=1` y `ANTHROPIC_API_KEY`, consultando antes la referencia de la API para el modelo y los parámetros; guardar el texto en `reglas.texto_llm` (FR-018)
-- [ ] T040 [US2] Orden `exportar` en `ghostmind/__main__.py`
+- [X] T037 [P] [US2] Implementar `ghostmind/catalogo.py`: registrar revisiones y exportar JSON (FR-016, FR-017)
+- [X] T038 [US2] Implementar `app/catalogo.py` en Streamlit: selector de ejecución, resumen, tabla de reglas con filtros por decisión, estado y confianza, detalle con condiciones, umbrales confirmados y muestra de casos, botones de aprobar y rechazar con nota, descarga de JSON (FR-014 a FR-017)
+- [X] T039 [US2] Implementar `ghostmind/redactor_llm.py` con el SDK de Anthropic, activado solo con `GHOSTMIND_LLM=1` y `ANTHROPIC_API_KEY`, consultando antes la referencia de la API para el modelo y los parámetros; guardar el texto en `reglas.texto_llm` (FR-018)
+- [X] T040 [US2] Orden `exportar` en `ghostmind/__main__.py`
 
 **Punto de control**: historias 1 y 2 funcionan juntas y por separado.
 

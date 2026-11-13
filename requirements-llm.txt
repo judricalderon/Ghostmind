@@ -1,0 +1,3 @@
+# Opcional: redacción de reglas con un modelo de lenguaje (Claude).
+# Se activa con GHOSTMIND_LLM=1 y la llave en ANTHROPIC_API_KEY. Ninguna métrica depende de esto.
+anthropic==2.8.0
