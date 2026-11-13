@@ -1,0 +1,34 @@
+# Entornos y caches de Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Datos generados en ejecuciones locales (las bases de evidencia se regeneran)
+*.sqlite
+*.sqlite3
+*.db
+datos/
+
+# Llaves y configuracion local (nunca se suben)
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Configuracion local del agente (puede guardar datos personales)
+.claude/settings.local.json
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
