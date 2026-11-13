@@ -11,7 +11,7 @@ En construcción por fases con un proceso dirigido por especificaciones ([Spec K
 | Fase | Contenido | Estado |
 |------|-----------|--------|
 | 0 | Preparación del repositorio y de Spec Kit | Lista |
-| 1 | Constitución, especificación, plan y tareas | Pendiente |
+| 1 | Constitución, especificación, plan y tareas | En revisión |
 | 2 | Sistema legacy simulado y reglas verdaderas | Pendiente |
 | 3 | Adaptador, explorador y registro SQLite | Pendiente |
 | 4 | Extractor de reglas, umbrales y confianza | Pendiente |
