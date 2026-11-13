@@ -91,27 +91,37 @@ def capturar(db: Path = BD_EXPERIMENTO, salida: Path = SALIDA / "capturas", semi
                 pagina.screenshot(path=str(ruta))
                 archivos.append(ruta)
 
+            def al_inicio(texto: str, exacto: bool = True) -> None:
+                # Streamlit desplaza un contenedor interno, no la ventana: se usa scrollIntoView.
+                elemento = pagina.get_by_text(texto, exact=exacto).first
+                elemento.wait_for(timeout=30_000)
+                elemento.evaluate("e => e.scrollIntoView({block: 'start'})")
+                pagina.wait_for_timeout(1200)
+
             pagina.goto(f"{url}/?ejecucion={ejecucion}&regla={regla}")
             listo()
             guardar("01_catalogo_reglas.png")
 
-            pagina.get_by_text("Detalle de la regla", exact=True).first.scroll_into_view_if_needed()
-            pagina.mouse.wheel(0, -60)
-            pagina.wait_for_timeout(800)
+            al_inicio("Detalle de la regla")
             guardar("02_detalle_regla.png")
 
-            pagina.get_by_text("Revisión del especialista", exact=True).first.scroll_into_view_if_needed()
-            pagina.wait_for_timeout(800)
-            guardar("03_evidencia_y_revision.png")
+            al_inicio("Umbrales confirmados por bisección")
+            guardar("03_revision_especialista.png")
 
-            pagina.evaluate("window.scrollTo(0, 0)")
+            pagina.get_by_text("Casos que la respaldan", exact=False).first.click()
+            pagina.wait_for_timeout(1500)
+            al_inicio("Casos que la respaldan", exacto=False)
+            guardar("04_evidencia.png")
+
             pagina.get_by_role("tab", name="Convergencia").click()
-            pagina.wait_for_timeout(3000)
-            guardar("04_convergencia.png")
+            pagina.wait_for_timeout(2500)
+            al_inicio("Cada ronda induce reglas", exacto=False)
+            guardar("05_convergencia.png")
 
             pagina.get_by_role("tab", name="Verificación").click()
-            pagina.wait_for_timeout(3000)
-            guardar("05_verificacion.png")
+            pagina.wait_for_timeout(2500)
+            al_inicio("Versión a comparar")
+            guardar("06_verificacion.png")
             navegador.close()
     finally:
         servidor.terminate()

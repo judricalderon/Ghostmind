@@ -178,11 +178,8 @@ def seccion_reglas(registro: Registro, dic: Diccionario, reglas: list[dict], fil
                           format_func=lambda c: f"{c} · {por_codigo[c]['decision']}")
     regla = por_codigo[codigo]
 
-    insignias = st.columns([1, 1, 6])
-    with insignias[0]:
-        st.badge(regla["decision"], color=COLOR_DECISION[regla["decision"]])
-    with insignias[1]:
-        st.badge(ESTADOS[regla["estado"]], color=COLOR_ESTADO[regla["estado"]])
+    st.markdown(f":{COLOR_DECISION[regla['decision']]}-badge[{regla['decision']}] "
+                f":{COLOR_ESTADO[regla['estado']]}-badge[{ESTADOS[regla['estado']]}]")
     if regla["texto_llm"]:
         st.markdown(f"**{regla['texto_llm']}**")
         st.caption(f"Redacción asistida por modelo de lenguaje. Por plantilla: {regla['texto_negocio']}")
@@ -362,7 +359,7 @@ def seccion_verificacion(registro: Registro, dic: Diccionario, eid: int, reglas:
     sin_regla = int(diferencias["codigo"].isna().sum())
     if sin_regla:
         st.warning(f"{sin_regla} diferencias en casos que no caen en ninguna regla.")
-    with st.expander(f"Casos con diferencias ({len(diferencias)}; se muestran hasta 100)"):
+    with st.expander(f"Casos con diferencias ({formato_miles(len(diferencias))}; se muestran hasta 100)"):
         vista = diferencias.head(100)[["codigo", *dic.nombres, "decision_original", "decision_nueva"]]
         nombres = {"codigo": "Regla", "decision_original": "Antes", "decision_nueva": "Ahora"}
         nombres.update({c.nombre: c.etiqueta.capitalize() for c in dic.campos})

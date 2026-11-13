@@ -172,10 +172,10 @@ Capturas generadas con `python -m evaluacion.capturas` sobre la ejecución real 
 | Catálogo de reglas | Detalle de una regla |
 |---|---|
 | ![Catálogo](resultados/capturas/01_catalogo_reglas.png) | ![Detalle](resultados/capturas/02_detalle_regla.png) |
-| **Evidencia y revisión del especialista** | **Convergencia del descubrimiento** |
-| ![Evidencia](resultados/capturas/03_evidencia_y_revision.png) | ![Convergencia](resultados/capturas/04_convergencia.png) |
-| **Verificación de la versión modernizada** | |
-| ![Verificación](resultados/capturas/05_verificacion.png) | |
+| **Revisión del especialista** | **Evidencia de la regla** |
+| ![Revisión](resultados/capturas/03_revision_especialista.png) | ![Evidencia](resultados/capturas/04_evidencia.png) |
+| **Convergencia del descubrimiento** | **Verificación de la versión modernizada** |
+| ![Convergencia](resultados/capturas/05_convergencia.png) | ![Verificación](resultados/capturas/06_verificacion.png) |
 
 Para un video, el guion está en [docs/guion_video.md](docs/guion_video.md).
 

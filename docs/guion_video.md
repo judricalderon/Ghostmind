@@ -24,19 +24,19 @@ experimento (ver README, sección "Demostración").
 - **Pantalla**: catálogo en el navegador (`resultados/capturas/01_catalogo_reglas.png` si es en imágenes).
 - **Narración**: "Cada regla aparece en lenguaje de negocio, con su decisión, su nivel de confianza y su
   estado. Ninguna se acepta sola."
-- **Pantalla**: detalle de una regla (captura 02) y evidencia (captura 03).
+- **Pantalla**: detalle de una regla (captura 02), revisión (captura 03) y evidencia (captura 04).
 - **Narración**: "Aquí están las condiciones exactas, los umbrales confirmados por bisección y los casos que
   la respaldan. El especialista la valida o la rechaza con una nota, y el catálogo se exporta en JSON."
 - **Acción**: escribir una nota y pulsar "Validar regla".
 
 ## Escena 4. Cómo convergió (2:15 a 2:35)
 
-- **Pantalla**: pestaña Convergencia (captura 04).
+- **Pantalla**: pestaña Convergencia (captura 05).
 - **Narración**: "Las contradicciones bajan hasta cero en la última ronda; ahí el ciclo se detiene."
 
 ## Escena 5. Verificación de la versión modernizada (2:35 a 3:15)
 
-- **Pantalla**: pestaña Verificación (captura 05) o `python -m ghostmind verificar --ejecucion 1 --objetivo modernizado`.
+- **Pantalla**: pestaña Verificación (captura 06) o `python -m ghostmind verificar --ejecucion 1 --objetivo modernizado`.
 - **Narración**: "Un equipo modernizó el módulo y, sin saberlo, cambió tres reglas. GhostMind repite sobre la
   versión nueva los casos que ya registró y muestra en qué reglas cambian las decisiones. Las tres
   alteraciones quedan a la vista."
