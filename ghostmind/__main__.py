@@ -18,6 +18,7 @@ from ghostmind.diccionario import Diccionario
 from ghostmind.explorador import Explorador, Parametros
 from ghostmind.muestreo import PARAMETROS_POR_DEFECTO, muestreo_inicial
 from ghostmind.registro import Registro, ruta_por_defecto
+from ghostmind.verificador import Verificador
 
 
 def _orden_muestrear(args: argparse.Namespace) -> int:
@@ -133,6 +134,33 @@ def _orden_exportar(args: argparse.Namespace) -> int:
     return 0
 
 
+def _orden_verificar(args: argparse.Namespace) -> int:
+    dic = Diccionario.cargar()
+    registro = Registro(args.db, dic)
+    try:
+        resultado = Verificador(dic, registro, args.objetivo).verificar(args.ejecucion)
+    except (KeyError, ValueError) as exc:
+        print(f"No se puede verificar: {exc}", file=sys.stderr)
+        registro.cerrar()
+        return 2
+    registro.cerrar()
+    con_diferencias = resultado.reglas_con_diferencias
+    print(f"Verificación {resultado.ejecucion_id}: casos de la ejecución {resultado.ejecucion_base_id} "
+          f"repetidos sobre '{resultado.objetivo}'")
+    print(f"Casos repetidos: {resultado.casos_repetidos} | Consultas: {resultado.consultas} | "
+          f"Diferencias: {resultado.diferencias} | Errores: {resultado.errores}")
+    print(f"Reglas con diferencias: {len(con_diferencias)} de {len(resultado.por_regla)}")
+    if resultado.sin_regla:
+        print(f"Casos fuera de toda regla: {resultado.sin_regla}")
+    if con_diferencias:
+        print()
+        print(f"{'Código':7s} {'Decisión':16s} {'Casos':>6s} {'Difer.':>6s}  Cambios")
+        for r in con_diferencias:
+            cambios = ", ".join(f"{c}: {n}" for c, n in r.cambios.most_common())
+            print(f"{r.codigo:7s} {r.decision:16s} {r.casos:6d} {r.diferencias:6d}  {cambios}")
+    return 0
+
+
 def construir_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m ghostmind",
                                      description="GhostMind IA: descubrimiento de reglas por caja negra.")
@@ -156,6 +184,12 @@ def construir_parser() -> argparse.ArgumentParser:
     exportar.add_argument("--salida", required=True)
     exportar.add_argument("--db", default=str(ruta_por_defecto()))
     exportar.set_defaults(funcion=_orden_exportar)
+
+    verificar = ordenes.add_parser("verificar", help="Repite los casos de una ejecución sobre otra versión.")
+    verificar.add_argument("--ejecucion", type=int, required=True)
+    verificar.add_argument("--objetivo", default="modernizado")
+    verificar.add_argument("--db", default=str(ruta_por_defecto()))
+    verificar.set_defaults(funcion=_orden_verificar)
 
     muestrear = ordenes.add_parser("muestrear", help="Solo el muestreo inicial (diagnóstico).")
     muestrear.add_argument("--objetivo", default="legacy")

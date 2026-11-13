@@ -16,7 +16,7 @@ En construcción por fases con un proceso dirigido por especificaciones ([Spec K
 | 3 | Adaptador, explorador (muestreo inicial) y registro SQLite | Lista |
 | 4 | Extractor de reglas, umbrales y confianza | Lista |
 | 5 | Catálogo en Streamlit | Lista |
-| 6 | Versión modernizada y verificador diferencial | Pendiente |
+| 6 | Versión modernizada y verificador diferencial | Lista |
 | 7 | Evaluación del experimento y resultados | Pendiente |
 
 ## Preparar el entorno
@@ -82,15 +82,23 @@ pip install -r requirements-llm.txt
 
 Luego define las variables de entorno `GHOSTMIND_LLM=1` y `ANTHROPIC_API_KEY` (la llave nunca se guarda en el repositorio). Opcionalmente, `GHOSTMIND_LLM_MODELO` cambia el modelo (por defecto `claude-opus-5-5`).
 
+## Verificar una versión modernizada (disponible desde la fase 6)
+
+```bash
+python -m ghostmind verificar --ejecucion 1 --objetivo modernizado
+```
+
+Repite sobre la versión modernizada (`legacy/crdapr_moderno.py`) todos los casos registrados en el descubrimiento y agrupa las diferencias por regla descubierta. Con `--objetivo legacy` sirve de control: debe dar cero diferencias. El reporte también se ve en la pestaña Verificación del catálogo, que permite lanzar la verificación con un botón.
+
 ## Estructura actual
 
 | Carpeta | Contenido |
 |---------|-----------|
 | `sistemas/` | Diccionario de campos y puntos de entrada: lo único que GhostMind conoce del sistema |
-| `legacy/` | Sistema legacy simulado de aprobación de créditos (GhostMind no lo lee) |
-| `ghostmind/` | El producto: diccionario, adaptador, registro SQLite, muestreo, extractor, explorador, catálogo y redacción opcional |
+| `legacy/` | Sistema legacy simulado de aprobación de créditos y su versión modernizada (GhostMind no los lee) |
+| `ghostmind/` | El producto: diccionario, adaptador, registro SQLite, muestreo, extractor, explorador, catálogo, redacción opcional y verificador |
 | `app/` | Interfaz del catálogo en Streamlit |
-| `evaluacion/` | Reglas verdaderas y evaluador; solo los usa la evaluación del experimento |
+| `evaluacion/` | Reglas verdaderas, alteraciones de la versión modernizada y evaluador; solo los usa la evaluación del experimento |
 | `tests/` | Pruebas automáticas |
 
 Las instrucciones para ejecutar el prototipo se completarán al cerrar la fase 7.

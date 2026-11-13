@@ -67,3 +67,19 @@ def test_boton_de_exportar(base_con_ejecucion):
     at = abrir_app()
     descargas = [e for e in at.get("download_button")]
     assert descargas, "falta el botón de exportar"
+
+
+def test_verificacion_desde_la_interfaz(base_con_ejecucion, dic):
+    ruta, resultado = base_con_ejecucion
+    at = abrir_app()
+    assert any("Todavía no hay verificaciones" in str(e.value) for e in at.info)
+    at.button(key="verificar").click().run()
+    assert not at.exception, at.exception
+    reg = Registro(ruta, dic)
+    verificaciones = reg.ejecuciones("verificacion")
+    assert len(verificaciones) == 1
+    assert verificaciones[0]["ejecucion_base_id"] == resultado.ejecucion_id
+    assert verificaciones[0]["objetivo"] == "modernizado"
+    reg.cerrar()
+    tablas = [d.value for d in at.dataframe if "Diferencias" in d.value.columns]
+    assert tablas and tablas[0]["Diferencias"].sum() > 0

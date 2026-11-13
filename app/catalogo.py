@@ -24,7 +24,9 @@ if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
 from ghostmind import redactor_llm  # noqa: E402
+from ghostmind.adaptador import RUTA_OBJETIVOS  # noqa: E402
 from ghostmind.catalogo import exportar, historial, revisar  # noqa: E402
+from ghostmind.verificador import Verificador  # noqa: E402
 from ghostmind.diccionario import Diccionario  # noqa: E402
 from ghostmind.registro import Registro, ruta_por_defecto  # noqa: E402
 from ghostmind.reglas import Caja, formato_miles  # noqa: E402
@@ -293,6 +295,77 @@ def seccion_convergencia(registro: Registro, dic: Diccionario, eid: int) -> None
             )
 
 
+def seccion_verificacion(registro: Registro, dic: Diccionario, eid: int, reglas: list[dict]) -> None:
+    st.markdown("Repite los casos registrados en este descubrimiento sobre otra versión del sistema y "
+                "muestra en qué reglas cambian las decisiones.")
+    objetivos = list(json.loads(RUTA_OBJETIVOS.read_text(encoding="utf-8")))
+    c1, c2 = st.columns([3, 1], vertical_alignment="bottom")
+    objetivo = c1.selectbox("Versión a comparar", objetivos, key="objetivo_verificacion",
+                            index=objetivos.index("modernizado") if "modernizado" in objetivos else 0)
+    if c2.button("Ejecutar verificación", key="verificar", width="stretch"):
+        with st.spinner("Repitiendo los casos registrados..."):
+            resultado = Verificador(dic, registro, objetivo).verificar(eid)
+        st.session_state["mensaje"] = (
+            "ok", f"Verificación {resultado.ejecucion_id} terminada: {resultado.diferencias} diferencias.")
+        st.session_state["verificacion"] = resultado.ejecucion_id
+        st.rerun()
+
+    verificaciones = {v["id"]: v for v in registro.ejecuciones("verificacion") if v["ejecucion_base_id"] == eid}
+    if not verificaciones:
+        st.info("Todavía no hay verificaciones de este descubrimiento. Usa el botón de arriba o ejecuta: "
+                f"`python -m ghostmind verificar --ejecucion {eid} --objetivo modernizado`")
+        return
+    opciones = sorted(verificaciones, reverse=True)
+    if st.session_state.get("verificacion") not in opciones:
+        st.session_state["verificacion"] = opciones[0]
+    vid = st.selectbox("Verificación", opciones, key="verificacion",
+                       format_func=lambda i: (f"#{i} · {verificaciones[i]['objetivo']} · "
+                                              f"{verificaciones[i]['inicio'][:16].replace('T', ' ')}"))
+    diferencias = registro.diferencias(vid)
+    errores = int(registro.casos(vid)["decision"].isna().sum())
+    afectadas = diferencias["codigo"].dropna().nunique() if not diferencias.empty else 0
+    m = st.columns(4)
+    m[0].metric("Casos repetidos", formato_miles(verificaciones[vid]["consultas"]))
+    m[1].metric("Diferencias", formato_miles(len(diferencias)))
+    m[2].metric("Reglas con diferencias", f"{afectadas} de {len(reglas)}")
+    m[3].metric("Errores del sistema", errores)
+    if diferencias.empty:
+        st.success("Ninguna decisión cambió: la versión comparada conserva todas las reglas observadas.")
+        return
+
+    por_codigo = {r["codigo"]: r for r in reglas}
+    resumen = []
+    for codigo, grupo in diferencias.groupby("codigo", sort=True):
+        regla = por_codigo[codigo]
+        cambios = (grupo["decision_original"] + " → " + grupo["decision_nueva"]).value_counts()
+        resumen.append({
+            "Código": codigo,
+            "Decisión de la regla": regla["decision"],
+            "Regla": regla["texto_llm"] or regla["texto_negocio"],
+            "Casos de la regla": regla["respaldo"] + regla["contraejemplos"],
+            "Diferencias": len(grupo),
+            "Cambios": "; ".join(f"{c} ({formato_miles(int(n))})" for c, n in cambios.items()),
+        })
+    resumen = pd.DataFrame(resumen).sort_values("Diferencias", ascending=False, kind="stable")
+    izquierda, derecha = st.columns([3, 2])
+    with izquierda:
+        st.markdown("**Reglas con diferencias**")
+        st.dataframe(resumen, hide_index=True, width="stretch",
+                     column_config={"Regla": st.column_config.TextColumn("Regla", width="large")})
+    with derecha:
+        st.markdown("**Diferencias por regla**")
+        st.altair_chart(grafico_barras(resumen, "Código", "Diferencias", "Regla", "Diferencias", horizontal=True),
+                        width="stretch")
+    sin_regla = int(diferencias["codigo"].isna().sum())
+    if sin_regla:
+        st.warning(f"{sin_regla} diferencias en casos que no caen en ninguna regla.")
+    with st.expander(f"Casos con diferencias ({len(diferencias)}; se muestran hasta 100)"):
+        vista = diferencias.head(100)[["codigo", *dic.nombres, "decision_original", "decision_nueva"]]
+        nombres = {"codigo": "Regla", "decision_original": "Antes", "decision_nueva": "Ahora"}
+        nombres.update({c.nombre: c.etiqueta.capitalize() for c in dic.campos})
+        st.dataframe(vista.rename(columns=nombres), hide_index=True, width="stretch")
+
+
 def principal(registro: Registro, dic: Diccionario, ruta: Path) -> None:
     st.title("GhostMind IA")
     st.caption("Catálogo de reglas de negocio descubiertas observando el sistema legacy como caja negra. "
@@ -343,11 +416,13 @@ def principal(registro: Registro, dic: Diccionario, ruta: Path) -> None:
     m[4].metric("Validadas por especialista", sum(r["estado"] == "validada" for r in reglas))
     mostrar_mensaje_pendiente()
 
-    pestanas = st.tabs(["Reglas", "Convergencia"])
+    pestanas = st.tabs(["Reglas", "Convergencia", "Verificación"])
     with pestanas[0]:
         seccion_reglas(registro, dic, reglas, filtros)
     with pestanas[1]:
         seccion_convergencia(registro, dic, eid)
+    with pestanas[2]:
+        seccion_verificacion(registro, dic, eid, reglas)
 
 
 dic = Diccionario.cargar()

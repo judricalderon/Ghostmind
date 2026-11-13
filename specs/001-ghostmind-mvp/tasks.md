@@ -149,16 +149,16 @@ regla.
 
 ### Pruebas de la Fase 6
 
-- [ ] T041 [P] [US3] Pruebas del modernizado en `tests/test_moderno.py`: coincide con el evaluador declarativo con las alteraciones A1 a A3 aplicadas en 50.000 solicitudes y difiere del legacy solo en regiones alteradas
-- [ ] T042 [P] [US3] Pruebas del verificador en `tests/test_verificador.py`: contra el mismo legacy da cero diferencias; contra una versión con un umbral movido detecta la diferencia y la asocia a la regla correcta; las consultas se cuentan en una ejecución de tipo `verificacion`
+- [X] T041 [P] [US3] Pruebas del modernizado en `tests/test_moderno.py`: coincide con el evaluador declarativo con las alteraciones A1 a A3 aplicadas en 50.000 solicitudes y difiere del legacy solo en regiones alteradas
+- [X] T042 [P] [US3] Pruebas del verificador en `tests/test_verificador.py`: contra el mismo legacy da cero diferencias; contra una versión con un umbral movido detecta la diferencia y la asocia a la regla correcta; las consultas se cuentan en una ejecución de tipo `verificacion`
 
 ### Implementación de la Fase 6
 
-- [ ] T043 [P] [US3] Crear `evaluacion/alteraciones.json` con A1, A2 y A3 de D11
-- [ ] T044 [P] [US3] Implementar `legacy/crdapr_moderno.py` en estilo actual con el mismo contrato `CRDAPR01(WK_REG)` y las tres alteraciones
-- [ ] T045 [US3] Extender `evaluacion/verdad.py` para aplicar alteraciones (depende de T043)
-- [ ] T046 [US3] Implementar `ghostmind/verificador.py`: repetir casos únicos, comparar, agrupar por regla y guardar en `diferencias` (D10, FR-019)
-- [ ] T047 [US3] Orden `verificar` en `ghostmind/__main__.py` y pestaña de verificación en `app/catalogo.py` (FR-021)
+- [X] T043 [P] [US3] Crear `evaluacion/alteraciones.json` con A1, A2 y A3 de D11
+- [X] T044 [P] [US3] Implementar `legacy/crdapr_moderno.py` en estilo actual con el mismo contrato `CRDAPR01(WK_REG)` y las tres alteraciones
+- [X] T045 [US3] Extender `evaluacion/verdad.py` para aplicar alteraciones (depende de T043)
+- [X] T046 [US3] Implementar `ghostmind/verificador.py`: repetir casos únicos, comparar, agrupar por regla y guardar en `diferencias` (D10, FR-019)
+- [X] T047 [US3] Orden `verificar` en `ghostmind/__main__.py` y pestaña de verificación en `app/catalogo.py` (FR-021)
 
 **Punto de control**: historias 1 a 3 funcionan.
 

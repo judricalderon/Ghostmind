@@ -21,7 +21,7 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
-from ghostmind.adaptador import Adaptador, ErrorDelSistema, PresupuestoAgotado
+from ghostmind.adaptador import Adaptador, ErrorDelSistema, PresupuestoAgotado, resolver_objetivo
 from ghostmind.diccionario import Diccionario, Solicitud
 from ghostmind.extractor import Extractor, Hoja, Modelo
 from ghostmind.muestreo import PARAMETROS_POR_DEFECTO, muestreo_inicial, tamano_muestreo_inicial
@@ -136,13 +136,16 @@ class Explorador:
             raise ValueError(
                 f"El presupuesto ({self.p.presupuesto}) es menor que el muestreo inicial ({tamano})."
             )
-        nombre_objetivo = self.objetivo if isinstance(self.objetivo, str) else getattr(
-            self.objetivo, "__name__", "personalizado")
+        if isinstance(self.objetivo, str):
+            nombre_objetivo, punto_de_entrada = self.objetivo, resolver_objetivo(self.objetivo)
+        else:
+            nombre_objetivo = getattr(self.objetivo, "__name__", "personalizado")
+            punto_de_entrada = self.objetivo
         self.ejecucion_id = self.registro.crear_ejecucion(
             "descubrimiento", nombre_objetivo, self.semilla, self.p.presupuesto,
             parametros=self.p.como_dict(),
         )
-        self.adaptador = Adaptador(self.dic, self.objetivo, self.registro, self.ejecucion_id,
+        self.adaptador = Adaptador(self.dic, punto_de_entrada, self.registro, self.ejecucion_id,
                                    self.p.presupuesto)
 
         motivo: str | None = None

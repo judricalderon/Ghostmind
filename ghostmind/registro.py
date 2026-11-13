@@ -354,6 +354,28 @@ class Registro:
         self.con.execute("UPDATE reglas SET texto_llm = ? WHERE id = ?", (texto, regla_id))
         self.con.commit()
 
+    # Verificación diferencial
+
+    def guardar_diferencia(self, ejecucion_id: int, caso_base_id: int, caso_nuevo_id: int,
+                           regla_id: int | None, decision_original: str, decision_nueva: str) -> None:
+        self.con.execute(
+            "INSERT INTO diferencias VALUES (?, ?, ?, ?, ?, ?)",
+            (ejecucion_id, caso_base_id, caso_nuevo_id, regla_id, decision_original, decision_nueva),
+        )
+
+    def diferencias(self, ejecucion_id: int) -> pd.DataFrame:
+        """Diferencias de una verificación con los datos del caso original y el código de la regla."""
+        campos = ", ".join(f"c.{n}" for n in self._campos)
+        cursor = self.con.execute(
+            f"SELECT d.caso_base_id, d.caso_nuevo_id, d.regla_id, r.codigo, d.decision_original,"
+            f" d.decision_nueva, c.n_consulta, c.origen, {campos}"
+            " FROM diferencias d JOIN casos c ON c.id = d.caso_base_id"
+            " LEFT JOIN reglas r ON r.id = d.regla_id WHERE d.ejecucion_id = ? ORDER BY c.n_consulta",
+            (ejecucion_id,),
+        )
+        columnas = [d[0] for d in cursor.description]
+        return pd.DataFrame([tuple(f) for f in cursor.fetchall()], columns=columnas)
+
     def ejecutar(self, sql: str, parametros: Iterable[Any] = ()) -> sqlite3.Cursor:
         """Acceso de bajo nivel para los módulos de GhostMind que guardan reglas y revisiones."""
         return self.con.execute(sql, tuple(parametros))

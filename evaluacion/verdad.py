@@ -78,3 +78,29 @@ class Verdad:
 
     def decision(self, solicitud: Mapping[str, Any]) -> str:
         return self.evaluar(solicitud)[0]
+
+    def con_alteraciones(self, alteraciones: list[dict]) -> "Verdad":
+        """Copia de las reglas con alteraciones aplicadas (eliminar o cambiar condiciones)."""
+        por_regla = {a["regla"]: a for a in alteraciones}
+        reglas = []
+        for regla in self.reglas:
+            alteracion = por_regla.get(regla.id)
+            if alteracion is None:
+                reglas.append(regla)
+            elif alteracion["tipo"] == "eliminar":
+                continue
+            elif alteracion["tipo"] == "cambiar_condicion":
+                condiciones = {**regla.condiciones, **alteracion["nueva_condicion"]}
+                reglas.append(ReglaVerdadera(regla.id, regla.tipo, regla.descripcion, condiciones,
+                                             regla.decision))
+            else:
+                raise ValueError(f"Tipo de alteración desconocido: {alteracion['tipo']!r}")
+        return Verdad(reglas, self.decision_por_defecto)
+
+
+RUTA_ALTERACIONES = Path(__file__).resolve().parent / "alteraciones.json"
+
+
+def cargar_alteraciones(ruta: Path | str | None = None) -> list[dict]:
+    """Alteraciones de la versión modernizada (research.md, D11)."""
+    return json.loads(Path(ruta or RUTA_ALTERACIONES).read_text(encoding="utf-8"))["alteraciones"]
