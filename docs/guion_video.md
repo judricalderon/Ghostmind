@@ -1,4 +1,4 @@
-# Guion de demostración en video (4 minutos aproximadamente)
+# Guion de demostración en video (4 minutos y medio aproximadamente)
 
 Alternativa a la demostración en vivo. Cada escena indica qué se muestra en pantalla y qué se dice.
 Antes de grabar, ejecutar `python -m evaluacion.experimento` y abrir el catálogo con la base del
@@ -11,10 +11,15 @@ experimento (ver README, sección "Demostración").
   que nadie documentó. GhostMind no puede leer este código: solo conoce los nombres, tipos y rangos de los
   ocho campos de entrada, que están en `sistemas/diccionario_credito.json`."
 
-## Escena 2. Descubrimiento por caja negra (0:30 a 1:15)
+## Escena 2. Elegir el sistema y descubrir por caja negra (0:30 a 1:15)
 
-- **Pantalla**: terminal con `python -m ghostmind descubrir --objetivo legacy --semilla 42`.
-- **Narración**: "GhostMind envía solicitudes al sistema por medio de un adaptador y registra cada respuesta.
+- **Pantalla**: catálogo en el navegador. En la barra lateral, **Proyecto** en "Créditos
+  (CRDAPR01)" y la tabla **Atributos del sistema** abierta: cada atributo con su tipo, sus límites y su
+  posición en el registro. Luego **Nuevo descubrimiento**: caja negra `legacy`, semilla 42, *Descubrir reglas*.
+  En terminal es `python -m ghostmind descubrir --objetivo legacy --semilla 42`.
+- **Narración**: "Primero se elige el sistema legacy que se quiere descifrar. Esta tabla es todo lo que
+  GhostMind sabe de él: los atributos que recibe, sus límites y dónde va cada uno en el registro.
+  GhostMind envía solicitudes al sistema por medio de un adaptador y registra cada respuesta.
   Primero hace un muestreo inicial; luego, en cada ronda, entrena un árbol de decisión, busca el valor exacto
   donde cambia la decisión dividiendo intervalos por mitades y busca contraejemplos. Se detuvo solo cuando
   las reglas dejaron de cambiar: cinco rondas y 5.559 consultas."
@@ -41,7 +46,17 @@ experimento (ver README, sección "Demostración").
   versión nueva los casos que ya registró y muestra en qué reglas cambian las decisiones. Las tres
   alteraciones quedan a la vista."
 
-## Escena 6. Resultados y límites (3:15 a 4:00)
+## Escena 6. Otro sistema legacy, otros atributos (3:15 a 3:45)
+
+- **Pantalla**: en **Proyecto**, cambiar a "Seguros de auto (SINAUT01)" (captura 07). La tabla
+  de atributos cambia: antigüedad de la póliza, valor reclamado, tiempo para dar aviso, tipo de siniestro,
+  cobertura. Pulsar *Descubrir reglas* con la caja negra `legacy`.
+- **Narración**: "GhostMind no está atado a un sistema. Este es otro módulo legacy, de reclamaciones de
+  seguros, con otros atributos y otras decisiones: pagar, objetar o investigar. Con el mismo método descubre
+  sus reglas, por ejemplo que el aviso tardío se objeta. Es una demostración: las métricas del experimento
+  se miden sobre el sistema de créditos."
+
+## Escena 7. Resultados y límites (3:45 a 4:30)
 
 - **Pantalla**: `resultados/metricas.md`, tabla de criterios.
 - **Narración**: "Los criterios se fijaron antes de las pruebas. GhostMind recuperó nueve de las diez reglas

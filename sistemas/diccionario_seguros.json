@@ -1,0 +1,41 @@
+{
+  "sistema": "SINAUT01 - reclamaciones de seguro de auto",
+  "longitud_registro": 30,
+  "decisiones": [
+    {"valor": "PAGAR", "frase": "Se paga la reclamación", "frase_general": "Se paga cualquier reclamación.",
+     "palabras": ["paga", "pagar", "pago"], "tono": "positivo"},
+    {"valor": "OBJETAR", "frase": "Se objeta la reclamación", "frase_general": "Se objeta cualquier reclamación.",
+     "palabras": ["objeta", "objetar", "objeción"], "tono": "negativo"},
+    {"valor": "INVESTIGAR", "frase": "La reclamación pasa a investigación",
+     "frase_general": "Cualquier reclamación pasa a investigación.",
+     "palabras": ["investiga"], "tono": "intermedio"}
+  ],
+  "campos": [
+    {"nombre": "antiguedad_poliza", "etiqueta": "antigüedad de la póliza", "articulo": "la", "tipo": "entero",
+     "unidad": "días", "minimo": 0, "maximo": 1825, "inicio": 1, "longitud": 4},
+    {"nombre": "valor_reclamado", "etiqueta": "valor reclamado", "articulo": "el", "tipo": "entero",
+     "unidad": "pesos", "minimo": 100000, "maximo": 200000000, "inicio": 5, "longitud": 9},
+    {"nombre": "valor_asegurado", "etiqueta": "valor asegurado del vehículo", "articulo": "el", "tipo": "entero",
+     "unidad": "pesos", "minimo": 5000000, "maximo": 300000000, "inicio": 14, "longitud": 9},
+    {"nombre": "dias_aviso", "etiqueta": "tiempo para dar aviso", "articulo": "el", "tipo": "entero",
+     "unidad": "días", "minimo": 0, "maximo": 120, "inicio": 23, "longitud": 3},
+    {"nombre": "reclamos_previos", "etiqueta": "número de reclamaciones previas", "articulo": "el", "tipo": "entero",
+     "unidad": "reclamaciones", "minimo": 0, "maximo": 9, "inicio": 26, "longitud": 1},
+    {"nombre": "edad_conductor", "etiqueta": "edad del conductor", "articulo": "la", "tipo": "entero",
+     "unidad": "años", "minimo": 16, "maximo": 90, "inicio": 27, "longitud": 2},
+    {"nombre": "tipo_siniestro", "etiqueta": "tipo de siniestro", "articulo": "el", "tipo": "categorico",
+     "inicio": 29, "longitud": 1,
+     "valores": [
+       {"valor": "CHOQUE", "codigo": "C", "etiqueta": "choque con daño parcial"},
+       {"valor": "PERDIDA_TOTAL", "codigo": "T", "etiqueta": "pérdida total"},
+       {"valor": "HURTO", "codigo": "H", "etiqueta": "hurto"},
+       {"valor": "TERCEROS", "codigo": "R", "etiqueta": "daños a terceros"}
+     ]},
+    {"nombre": "cobertura", "etiqueta": "cobertura", "articulo": "la", "tipo": "categorico",
+     "inicio": 30, "longitud": 1,
+     "valores": [
+       {"valor": "BASICA", "codigo": "B", "etiqueta": "básica"},
+       {"valor": "PLENA", "codigo": "P", "etiqueta": "todo riesgo"}
+     ]}
+  ]
+}

@@ -22,14 +22,8 @@ from ghostmind.reglas import Caja
 MODELO_POR_DEFECTO = "claude-opus-5-5"
 BETA_RESPALDO = "server-side-fallback-2026-07-01"
 
-PALABRA_DECISION = {
-    "APROBADO": ("aprueba", "aprobad", "aprobar"),
-    "RECHAZADO": ("rechaza", "rechazad", "rechazar"),
-    "REVISION_MANUAL": ("revisión manual", "revision manual"),
-}
-
 INSTRUCCIONES = (
-    "Redactas reglas de negocio para especialistas de crédito que van a validarlas. Recibes una "
+    "Redactas reglas de negocio para especialistas del negocio que van a validarlas. Recibes una "
     "regla descubierta observando un sistema: sus condiciones exactas y su decisión. Escribe una "
     "sola oración en español claro y natural que exprese exactamente la misma regla. No agregues, "
     "quites ni cambies condiciones, valores, unidades ni la decisión; puedes reordenar las "
@@ -99,9 +93,10 @@ def validar_texto(texto: str, regla: dict[str, Any], dic: Diccionario) -> None:
     if not texto.strip():
         raise RedaccionRechazada("la respuesta llegó vacía")
     minusculas = texto.lower()
-    if not any(palabra in minusculas for palabra in PALABRA_DECISION[regla["decision"]]):
+    if not any(palabra in minusculas for palabra in dic.palabras_decision(regla["decision"])):
         raise RedaccionRechazada("no expresa la misma decisión")
-    for decision, palabras in PALABRA_DECISION.items():
+    for decision in dic.decisiones:
+        palabras = dic.palabras_decision(decision)
         if decision != regla["decision"] and any(p in minusculas for p in palabras):
             raise RedaccionRechazada(f"menciona otra decisión ({decision})")
     mencionados = {int(n.replace(".", "")) for n in re.findall(r"\d[\d.]*\d|\d", texto)}

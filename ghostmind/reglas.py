@@ -19,17 +19,6 @@ ESTADOS = ("hipotesis", "corroborada", "validada", "rechazada")
 MIN_RESPALDO_CORROBORADA = 30
 MIN_PRUEBAS_CORROBORADA = 20
 
-FRASE_DECISION = {
-    "APROBADO": "Se aprueba la solicitud",
-    "RECHAZADO": "Se rechaza la solicitud",
-    "REVISION_MANUAL": "La solicitud pasa a revisión manual",
-}
-FRASE_CUALQUIERA = {
-    "APROBADO": "Se aprueba cualquier solicitud.",
-    "RECHAZADO": "Se rechaza cualquier solicitud.",
-    "REVISION_MANUAL": "Cualquier solicitud pasa a revisión manual.",
-}
-
 
 def umbral_a_entero(umbral: float, lado: str) -> tuple[str, int]:
     """Convierte un umbral del árbol (``x <= umbral``) en un límite entero inclusivo."""
@@ -289,6 +278,7 @@ class Regla:
 
     def texto_negocio(self) -> str:
         partes = self.caja._partes_negocio()
+        dic = self.caja.dic  # las frases de cada decisión salen del diccionario del proyecto
         if not partes:
-            return FRASE_CUALQUIERA[self.decision]
-        return f"{FRASE_DECISION[self.decision]} cuando {_lista(partes, 'y')}."
+            return dic.frase_general(self.decision)
+        return f"{dic.frase_decision(self.decision)} cuando {_lista(partes, 'y')}."

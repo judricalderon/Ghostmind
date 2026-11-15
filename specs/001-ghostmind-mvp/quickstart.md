@@ -78,3 +78,20 @@ python -m evaluacion.instrumento_c4.puntuar respuestas.csv
 ```
 
 Resultado esperado: porcentaje de respuestas correctas y calificación promedio de utilidad.
+
+## Escenario 7: elegir el proyecto (Fase 9)
+
+```bash
+python -m ghostmind proyectos
+```
+
+```bash
+python -m ghostmind descubrir --proyecto seguros --objetivo legacy --semilla 42
+```
+
+Resultado esperado: la primera orden lista los proyectos `credito` y `seguros` con sus cajas negras,
+decisiones y atributos (tipo, límites o valores y posición en el registro). La segunda descubre las
+reglas del legacy de seguros y las guarda en `datos/seguros.sqlite`, sin tocar la base de crédito. En
+el catálogo, el selector **Proyecto** cambia la tabla de atributos, las cajas negras de **Nuevo
+descubrimiento**, las ejecuciones y los filtros de decisión. `python -m evaluacion.experimento` da las
+mismas cifras que antes de la Fase 9.

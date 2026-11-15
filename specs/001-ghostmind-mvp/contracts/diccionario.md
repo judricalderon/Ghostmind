@@ -50,22 +50,10 @@ registro ni la validación.
 CRDAPR01(WK_REG: str) -> str   # devuelve "APROBADO", "RECHAZADO" o "REVISION_MANUAL"
 ```
 
-`sistemas/objetivos.json` es la lista de cajas negras disponibles: asocia cada nombre con su punto
-de entrada y una descripción para el usuario (Fase 8). También se acepta el formato anterior, en el
-que el valor es solo el punto de entrada.
+Las cajas negras disponibles se declaran por proyecto en `sistemas/proyectos.json`
+([proyectos.md](proyectos.md)), que desde la Fase 9 reemplaza a `sistemas/objetivos.json`. Para
+descifrar otra caja negra con los mismos atributos basta agregarla a su proyecto. Un sistema con
+atributos distintos es un proyecto nuevo con su propio diccionario.
 
-```json
-{
-  "legacy": {
-    "punto_de_entrada": "legacy.crdapr01:CRDAPR01",
-    "descripcion": "Módulo legacy CRDAPR01 de aprobación de créditos (el sistema a modernizar)."
-  },
-  "modernizado": {
-    "punto_de_entrada": "legacy.crdapr_moderno:CRDAPR01",
-    "descripcion": "Versión modernizada del mismo módulo, con el mismo registro de entrada."
-  }
-}
-```
-
-Para descifrar otra caja negra con los mismos campos basta agregar una entrada. Un sistema con
-campos distintos necesita además su propio diccionario.
+El segundo diccionario incluido, `sistemas/diccionario_seguros.json`, describe el proyecto de
+demostración SINAUT01: registro de 30 posiciones, 8 atributos y decisiones con sus frases.

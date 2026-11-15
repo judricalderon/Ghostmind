@@ -134,3 +134,34 @@ def test_diccionario_con_nombres_repetidos_se_rechaza():
     roto["campos"][1]["nombre"] = "edad"
     with pytest.raises(ValueError):
         Diccionario.desde_dict(roto)
+
+
+def test_frases_de_las_decisiones_de_credito_no_cambian(dic):
+    assert dic.frase_decision("RECHAZADO") == "Se rechaza la solicitud"
+    assert dic.frase_general("APROBADO") == "Se aprueba cualquier solicitud."
+    assert dic.frase_decision("REVISION_MANUAL") == "La solicitud pasa a revisión manual"
+    assert dic.tono_decision("APROBADO") == "positivo"
+    assert "aprueba" in dic.palabras_decision("APROBADO")
+
+
+def test_decisiones_con_frases_propias():
+    datos = json.loads(RUTA_DICCIONARIO.read_text(encoding="utf-8"))
+    datos["decisiones"] = [
+        {"valor": "PAGAR", "frase": "Se paga la reclamación", "frase_general": "Se paga cualquier reclamación.",
+         "palabras": ["paga"], "tono": "positivo"},
+        "ARCHIVAR",
+    ]
+    otro = Diccionario.desde_dict(datos)
+    assert otro.decisiones == ("PAGAR", "ARCHIVAR")
+    assert otro.frase_decision("PAGAR") == "Se paga la reclamación"
+    assert otro.frase_general("PAGAR") == "Se paga cualquier reclamación."
+    assert otro.palabras_decision("PAGAR") == ("paga",)
+    assert otro.frase_decision("ARCHIVAR") == "La decisión es ARCHIVAR"
+    assert otro.tono_decision("ARCHIVAR") == "neutro"
+
+
+def test_tono_desconocido_se_rechaza():
+    datos = json.loads(RUTA_DICCIONARIO.read_text(encoding="utf-8"))
+    datos["decisiones"] = [{"valor": "PAGAR", "tono": "alegre"}]
+    with pytest.raises(ValueError):
+        Diccionario.desde_dict(datos)

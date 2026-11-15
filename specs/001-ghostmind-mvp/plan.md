@@ -47,7 +47,7 @@ ejecución
 
 | Principio | Cómo lo cumple el diseño | Estado |
 |-----------|--------------------------|--------|
-| I. Caja negra estricta | GhostMind recibe solo `sistemas/diccionario_credito.json`; el adaptador resuelve el punto de entrada desde `sistemas/objetivos.json`; prueba de arquitectura que falla si `ghostmind/` importa `legacy` o `evaluacion` o menciona sus archivos | Cumple |
+| I. Caja negra estricta | GhostMind recibe solo el diccionario del proyecto (`sistemas/diccionario_*.json`); el adaptador resuelve el punto de entrada desde `sistemas/proyectos.json`; prueba de arquitectura que falla si `ghostmind/` importa `legacy` o `evaluacion` o menciona sus archivos | Cumple |
 | II. Evidencia y trazabilidad | Cada consulta se guarda en `casos` antes de devolverse; `umbrales`, `regla_casos` y `rondas` enlazan reglas y evidencia; el adaptador cuenta las consultas | Cumple |
 | III. Honestidad experimental | Métricas y umbrales fijados en la especificación; reglas, alteraciones y semillas fijadas en D4, D11 y la especificación; `resultados/` solo se escribe desde `evaluacion.experimento` | Cumple |
 | IV. Humano en el ciclo | GhostMind asigna solo `hipotesis` y `corroborada`; `validada` y `rechazada` solo desde el catálogo, con historial en `revisiones` | Cumple |
@@ -65,10 +65,10 @@ Revisión después del diseño (data-model y contratos): sin cambios; sigue cump
 specs/001-ghostmind-mvp/
 ├── spec.md              # especificación
 ├── plan.md              # este archivo
-├── research.md          # decisiones D1 a D14 (incluye reglas plantadas y alteraciones)
+├── research.md          # decisiones D1 a D15 (incluye reglas plantadas y alteraciones)
 ├── data-model.md        # SQLite, catálogo JSON y datos de evaluación
 ├── quickstart.md        # escenarios de validación
-├── contracts/           # diccionario, adaptador, CLI y catálogo JSON
+├── contracts/           # diccionario, proyectos, adaptador, CLI y catálogo JSON
 ├── checklists/          # lista de calidad de la especificación
 └── tasks.md             # tareas por fase
 ```
@@ -77,18 +77,21 @@ specs/001-ghostmind-mvp/
 
 ```text
 sistemas/                       # lo que GhostMind sí conoce
+├── proyectos.json              # proyectos: diccionario, base y cajas negras (Fase 9)
 ├── diccionario_credito.json    # campos, tipos, rangos, registro y decisiones
-└── objetivos.json              # nombre de objetivo -> punto de entrada
+└── diccionario_seguros.json    # proyecto de demostración (Fase 9)
 
 legacy/                         # sistemas bajo prueba (GhostMind no los lee)
 ├── __init__.py
 ├── crdapr01.py                 # legacy simulado, estilo antiguo (Fase 2)
-└── crdapr_moderno.py           # versión modernizada con 3 alteraciones (Fase 6)
+├── crdapr_moderno.py           # versión modernizada con 3 alteraciones (Fase 6)
+└── sinaut01.py                 # legacy simulado de reclamaciones de seguro de auto (Fase 9)
 
 ghostmind/                      # el producto
 ├── __init__.py
 ├── __main__.py                 # órdenes descubrir, verificar, exportar, reglas
 ├── diccionario.py              # carga y valida el diccionario; arma registros
+├── proyectos.py                # lee sistemas/proyectos.json (Fase 9)
 ├── adaptador.py                # único contacto con el sistema; cuenta consultas
 ├── registro.py                 # SQLite: esquema, escritura y consultas
 ├── muestreo.py                 # muestreo inicial (D5)
@@ -105,6 +108,7 @@ app/
 evaluacion/                     # fuera de GhostMind; único lector de las reglas verdaderas
 ├── __init__.py
 ├── reglas_verdaderas.json
+├── reglas_verdaderas_seguros.json  # proyecto de demostración; no entra en C1 a C5 (Fase 9)
 ├── alteraciones.json
 ├── verdad.py                   # evaluador declarativo de reglas verdaderas y alteraciones
 ├── metricas.py                 # pureza, cobertura, C1, C2, C3, C5
@@ -117,6 +121,8 @@ datos/                          # SQLite local (excluido de git)
 
 tests/
 ├── test_diccionario.py
+├── test_proyectos.py           # Fase 9
+├── test_seguros.py             # Fase 9: legacy de seguros y descubrimiento sobre él
 ├── test_legacy.py              # legacy contra reglas verdaderas y fracciones efectivas
 ├── test_verdad.py              # evaluador declarativo
 ├── test_arquitectura.py        # caja negra estricta
@@ -150,6 +156,7 @@ su alcance y una prueba lo comprueba.
 | 6 | Versión modernizada, verificador, pestaña de verificación | US3 | Cero diferencias contra el legacy y diferencias contra el modernizado |
 | 7 | Métricas, experimento, robustez, instrumento C4, capturas, README | US4 | `resultados/` generado por ejecución real |
 | 8 | Elegir la caja negra y descubrir desde el catálogo (agregada el 2026-11-13) | US1 y US2 | Descubrimiento lanzado desde la interfaz, con pruebas |
+| 9 | Proyectos con atributos propios y proyecto de demostración de seguros (agregada el 2026-11-15) | US1 y US2 | Se elige el proyecto, se ven sus atributos y se descubren sus reglas; el experimento da las mismas cifras |
 
 ## Seguimiento de complejidad
 

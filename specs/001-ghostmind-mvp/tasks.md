@@ -206,6 +206,29 @@ terminal (FR-028, FR-029). No cambia reglas plantadas, alteraciones, métricas n
 
 ---
 
+## Fase 9: Proyectos con atributos propios (agregada el 2026-11-15)
+
+**Objetivo**: elegir el proyecto (sistema legacy) que se va a descifrar, ver sus atributos y límites,
+y descubrir sus reglas con su propia base (FR-030 a FR-035). No cambia reglas plantadas de crédito,
+alteraciones, métricas ni resultados.
+
+- [X] T063 [P] Pruebas en `tests/test_proyectos.py`: carga de `sistemas/proyectos.json`, proyecto por defecto, base de cada proyecto y validaciones
+- [X] T064 [P] Pruebas en `tests/test_seguros.py`: SINAUT01 coincide con `evaluacion/reglas_verdaderas_seguros.json` en casos aleatorios y bordes; descubrimiento completo sobre el proyecto de seguros
+- [X] T065 [P] Pruebas de frases de decisión en `tests/test_diccionario.py` y de base de otro diccionario en `tests/test_registro.py`
+- [X] T066 Diccionario `sistemas/diccionario_seguros.json`, legacy simulado `legacy/sinaut01.py` y reglas plantadas `evaluacion/reglas_verdaderas_seguros.json`
+- [X] T067 `sistemas/proyectos.json` (reemplaza `objetivos.json`) y `ghostmind/proyectos.py`; cajas negras por proyecto en `ghostmind/adaptador.py`, el explorador y el verificador
+- [X] T068 Frases de decisión en `ghostmind/diccionario.py`, usadas por `ghostmind/reglas.py` y `ghostmind/redactor_llm.py`; control de base y diccionario en `ghostmind/registro.py`
+- [X] T069 Opción `--proyecto` y orden `proyectos` en `ghostmind/__main__.py`; pruebas en `tests/test_adaptador.py`
+- [X] T070 Selector de proyecto y tabla de atributos en `app/catalogo.py`; pruebas en `tests/test_app.py`
+- [X] T071 Prueba de caja negra ampliada al nuevo legacy en `tests/test_arquitectura.py`
+- [X] T072 Comprobar que `python -m evaluacion.experimento` da las mismas cifras de `resultados/`
+- [X] T073 Actualizar `README.md`, `docs/guion_video.md` y las capturas; revisar en el navegador
+
+**Punto de control**: desde el catálogo se elige el proyecto, se ven sus atributos y se descubren sus
+reglas; el experimento de crédito da las mismas cifras.
+
+---
+
 ## Dependencias y orden de ejecución
 
 ### Dependencias entre fases
@@ -215,6 +238,7 @@ terminal (FR-028, FR-029). No cambia reglas plantadas, alteraciones, métricas n
 - Fase 5 y Fase 6 dependen de la Fase 4. Son independientes entre sí, pero se hacen en orden
   porque el encargo pide revisión entre fases y la pestaña de verificación vive en el catálogo.
 - Fase 7 depende de todas.
+- Fase 8 y Fase 9 se agregaron después; cada una depende de la anterior.
 
 ### Dentro de cada fase
 

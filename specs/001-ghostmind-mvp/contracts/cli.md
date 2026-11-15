@@ -1,7 +1,9 @@
 # Contrato: órdenes de línea de comandos
 
-Todas se ejecutan desde la raíz del repositorio con el entorno virtual activo. La base de datos por
-defecto es `datos/ghostmind.sqlite` y se cambia con `--db`.
+Todas se ejecutan desde la raíz del repositorio con el entorno virtual activo. Desde la Fase 9, las
+órdenes de GhostMind aceptan `--proyecto` (por defecto `credito`; ver [proyectos.md](proyectos.md)).
+La base por defecto es la del proyecto (`datos/ghostmind.sqlite` para crédito, `datos/seguros.sqlite`
+para seguros) y se cambia con `--db`.
 
 ## GhostMind
 
@@ -49,10 +51,24 @@ Desde la Fase 8, la sección "Nuevo descubrimiento" de la barra lateral permite 
 la semilla y el presupuesto, y lanzar el descubrimiento.
 
 ```bash
-python -m ghostmind objetivos
+python -m ghostmind objetivos --proyecto credito
 ```
 
-Lista las cajas negras disponibles (nombres válidos para `--objetivo`) con su descripción.
+Lista las cajas negras del proyecto (nombres válidos para `--objetivo`) con su descripción.
+
+```bash
+python -m ghostmind proyectos
+```
+
+Lista los proyectos con su descripción, sus cajas negras, sus atributos (tipo, límites o valores y
+posición en el registro) y sus decisiones (Fase 9). Ejemplo con el proyecto de demostración:
+
+```bash
+python -m ghostmind descubrir --proyecto seguros --objetivo legacy --semilla 42
+```
+
+En el catálogo, el selector **Proyecto** de la barra lateral cambia de sistema; la tabla de atributos
+y las ejecuciones que se muestran son las del proyecto elegido.
 
 ## Evaluación (fuera de GhostMind)
 

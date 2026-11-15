@@ -93,3 +93,14 @@ def test_persistencia_entre_conexiones(tmp_path, solicitud_base):
     otro = Registro(ruta)
     assert otro.contar_casos(eid) == 1
     otro.cerrar()
+
+
+def test_no_abre_una_base_de_otro_diccionario(tmp_path):
+    from ghostmind.proyectos import obtener_proyecto
+    from ghostmind.registro import BaseDeOtroDiccionario
+
+    ruta = tmp_path / "credito.sqlite"
+    Registro(ruta).cerrar()
+    with pytest.raises(BaseDeOtroDiccionario):
+        Registro(ruta, obtener_proyecto("seguros").diccionario())
+    Registro(ruta).cerrar()  # la base sigue sirviendo para su propio diccionario

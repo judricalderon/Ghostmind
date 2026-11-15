@@ -12,18 +12,31 @@ from collections import Counter
 
 import numpy as np
 
-from ghostmind.adaptador import Adaptador, ErrorDelSistema, ObjetivoDesconocido, listar_objetivos
+from ghostmind.adaptador import Adaptador, ErrorDelSistema, ObjetivoDesconocido
 from ghostmind.catalogo import exportar_json
-from ghostmind.diccionario import Diccionario
+from ghostmind.diccionario import RAIZ
 from ghostmind.explorador import Explorador, Parametros
 from ghostmind.muestreo import PARAMETROS_POR_DEFECTO, muestreo_inicial
-from ghostmind.registro import Registro, ruta_por_defecto
+from ghostmind.proyectos import (
+    PROYECTO_POR_DEFECTO,
+    ProyectoDesconocido,
+    atributos,
+    cargar_proyectos,
+    obtener_proyecto,
+)
+from ghostmind.registro import BaseDeOtroDiccionario, Registro
 from ghostmind.verificador import Verificador
 
 
+def _abrir(args: argparse.Namespace):
+    """Proyecto elegido, su diccionario y su registro (la base del proyecto si no se pasa --db)."""
+    proyecto = obtener_proyecto(args.proyecto)
+    dic = proyecto.diccionario()
+    return proyecto, dic, Registro(args.db or proyecto.ruta_base(), dic)
+
+
 def _orden_muestrear(args: argparse.Namespace) -> int:
-    dic = Diccionario.cargar()
-    registro = Registro(args.db, dic)
+    _, dic, registro = _abrir(args)
     muestras = muestreo_inicial(dic, np.random.default_rng(args.semilla))
     presupuesto = len(muestras)
     eid = registro.crear_ejecucion(
@@ -31,7 +44,7 @@ def _orden_muestrear(args: argparse.Namespace) -> int:
         parametros={"orden": "muestrear", "muestreo": PARAMETROS_POR_DEFECTO},
     )
     try:
-        adaptador = Adaptador(dic, args.objetivo, registro, eid, presupuesto)
+        adaptador = Adaptador(dic, args.objetivo, registro, eid, presupuesto, proyecto=args.proyecto)
     except ObjetivoDesconocido as exc:
         print(exc, file=sys.stderr)
         return 2
@@ -88,12 +101,12 @@ def _resumen_ejecucion(registro: Registro, eid: int) -> None:
 
 
 def _orden_descubrir(args: argparse.Namespace) -> int:
-    dic = Diccionario.cargar()
-    registro = Registro(args.db, dic)
+    _, dic, registro = _abrir(args)
     parametros = Parametros(presupuesto=args.presupuesto, max_rondas=args.max_rondas)
     inicio = time.perf_counter()
     try:
-        resultado = Explorador(dic, registro, args.objetivo, args.semilla, parametros).descubrir()
+        resultado = Explorador(dic, registro, args.objetivo, args.semilla, parametros,
+                               proyecto=args.proyecto).descubrir()
     except ValueError as exc:
         print(f"Parámetros inválidos: {exc}", file=sys.stderr)
         registro.cerrar()
@@ -110,7 +123,7 @@ def _orden_descubrir(args: argparse.Namespace) -> int:
 
 
 def _orden_reglas(args: argparse.Namespace) -> int:
-    registro = Registro(args.db)
+    _, _, registro = _abrir(args)
     try:
         _resumen_ejecucion(registro, args.ejecucion)
     except KeyError as exc:
@@ -122,7 +135,7 @@ def _orden_reglas(args: argparse.Namespace) -> int:
 
 
 def _orden_exportar(args: argparse.Namespace) -> int:
-    registro = Registro(args.db)
+    _, _, registro = _abrir(args)
     try:
         ruta = exportar_json(registro, args.ejecucion, args.salida)
     except KeyError as exc:
@@ -135,11 +148,14 @@ def _orden_exportar(args: argparse.Namespace) -> int:
 
 
 def _orden_verificar(args: argparse.Namespace) -> int:
-    dic = Diccionario.cargar()
-    registro = Registro(args.db, dic)
+    _, dic, registro = _abrir(args)
     try:
-        resultado = Verificador(dic, registro, args.objetivo).verificar(args.ejecucion)
+        resultado = Verificador(dic, registro, args.objetivo, proyecto=args.proyecto).verificar(args.ejecucion)
     except (KeyError, ValueError) as exc:
+        print(f"No se puede verificar: {exc}", file=sys.stderr)
+        registro.cerrar()
+        return 2
+    except ObjetivoDesconocido as exc:
         print(f"No se puede verificar: {exc}", file=sys.stderr)
         registro.cerrar()
         return 2
@@ -162,9 +178,36 @@ def _orden_verificar(args: argparse.Namespace) -> int:
 
 
 def _orden_objetivos(args: argparse.Namespace) -> int:
-    print("Cajas negras disponibles (sistemas/objetivos.json); úsalas con --objetivo:")
-    for nombre, descripcion in listar_objetivos().items():
-        print(f"  {nombre:14s} {descripcion}")
+    proyecto = obtener_proyecto(args.proyecto)
+    print(f"Cajas negras del proyecto '{proyecto.clave}' ({proyecto.nombre}); úsalas con --objetivo:")
+    for nombre, caja in proyecto.cajas_negras.items():
+        print(f"  {nombre:14s} {caja.descripcion}")
+    return 0
+
+
+def _ruta_legible(ruta) -> str:
+    try:
+        return ruta.resolve().relative_to(RAIZ).as_posix()
+    except ValueError:
+        return str(ruta)
+
+
+def _orden_proyectos(args: argparse.Namespace) -> int:
+    print("Proyectos disponibles (sistemas/proyectos.json); úsalos con --proyecto:")
+    for clave, proyecto in cargar_proyectos().items():
+        dic = proyecto.diccionario()
+        defecto = "  [por defecto]" if clave == PROYECTO_POR_DEFECTO else ""
+        print(f"\n{clave}: {proyecto.nombre}{defecto}")
+        print(f"  {proyecto.descripcion}")
+        print(f"  Cajas negras (--objetivo): {', '.join(proyecto.cajas_negras)}")
+        print(f"  Decisiones: {', '.join(dic.decisiones)}")
+        print(f"  Base de evidencia: {_ruta_legible(proyecto.ruta_base())}")
+        print(f"  Atributos (registro de {dic.longitud_registro} posiciones):")
+        ancho = max(len(c.nombre) for c in dic.campos)
+        for fila in atributos(dic):
+            lugar = fila["Posición en el registro"]
+            lugar = f"posiciones {lugar}" if " a " in lugar else f"posición {lugar}"
+            print(f"    {fila['Nombre técnico']:{ancho}s}  {fila['Tipo']:10s}  {fila['Límites o valores']}  ({lugar})")
     return 0
 
 
@@ -173,7 +216,11 @@ def construir_parser() -> argparse.ArgumentParser:
                                      description="GhostMind IA: descubrimiento de reglas por caja negra.")
     ordenes = parser.add_subparsers(dest="orden", required=True)
 
-    objetivos = ordenes.add_parser("objetivos", help="Lista las cajas negras disponibles.")
+    proyectos = ordenes.add_parser("proyectos", help="Lista los proyectos, sus cajas negras y sus atributos.")
+    proyectos.set_defaults(funcion=_orden_proyectos)
+
+    objetivos = ordenes.add_parser("objetivos", help="Lista las cajas negras de un proyecto.")
+    objetivos.add_argument("--proyecto", default=PROYECTO_POR_DEFECTO)
     objetivos.set_defaults(funcion=_orden_objetivos)
 
     descubrir = ordenes.add_parser("descubrir", help="Descubre las reglas de un sistema.")
@@ -181,37 +228,46 @@ def construir_parser() -> argparse.ArgumentParser:
     descubrir.add_argument("--semilla", type=int, default=42)
     descubrir.add_argument("--presupuesto", type=int, default=20_000)
     descubrir.add_argument("--max-rondas", type=int, default=15)
-    descubrir.add_argument("--db", default=str(ruta_por_defecto()))
+    descubrir.add_argument("--proyecto", default=PROYECTO_POR_DEFECTO)
+    descubrir.add_argument("--db", default=None, help="Por defecto, la base del proyecto.")
     descubrir.set_defaults(funcion=_orden_descubrir)
 
     reglas = ordenes.add_parser("reglas", help="Muestra las reglas de una ejecución.")
     reglas.add_argument("--ejecucion", type=int, required=True)
-    reglas.add_argument("--db", default=str(ruta_por_defecto()))
+    reglas.add_argument("--proyecto", default=PROYECTO_POR_DEFECTO)
+    reglas.add_argument("--db", default=None, help="Por defecto, la base del proyecto.")
     reglas.set_defaults(funcion=_orden_reglas)
 
     exportar = ordenes.add_parser("exportar", help="Exporta el catálogo de una ejecución a JSON.")
     exportar.add_argument("--ejecucion", type=int, required=True)
     exportar.add_argument("--salida", required=True)
-    exportar.add_argument("--db", default=str(ruta_por_defecto()))
+    exportar.add_argument("--proyecto", default=PROYECTO_POR_DEFECTO)
+    exportar.add_argument("--db", default=None, help="Por defecto, la base del proyecto.")
     exportar.set_defaults(funcion=_orden_exportar)
 
     verificar = ordenes.add_parser("verificar", help="Repite los casos de una ejecución sobre otra versión.")
     verificar.add_argument("--ejecucion", type=int, required=True)
     verificar.add_argument("--objetivo", default="modernizado")
-    verificar.add_argument("--db", default=str(ruta_por_defecto()))
+    verificar.add_argument("--proyecto", default=PROYECTO_POR_DEFECTO)
+    verificar.add_argument("--db", default=None, help="Por defecto, la base del proyecto.")
     verificar.set_defaults(funcion=_orden_verificar)
 
     muestrear = ordenes.add_parser("muestrear", help="Solo el muestreo inicial (diagnóstico).")
     muestrear.add_argument("--objetivo", default="legacy")
     muestrear.add_argument("--semilla", type=int, default=42)
-    muestrear.add_argument("--db", default=str(ruta_por_defecto()))
+    muestrear.add_argument("--proyecto", default=PROYECTO_POR_DEFECTO)
+    muestrear.add_argument("--db", default=None, help="Por defecto, la base del proyecto.")
     muestrear.set_defaults(funcion=_orden_muestrear)
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = construir_parser().parse_args(argv)
-    return args.funcion(args)
+    try:
+        return args.funcion(args)
+    except (ProyectoDesconocido, BaseDeOtroDiccionario) as exc:
+        print(exc, file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

@@ -4,14 +4,14 @@ Ejecutar desde la raíz del repositorio:
 
     streamlit run app/catalogo.py
 
-Variables de entorno opcionales: ``GHOSTMIND_DB`` (ruta de la base de evidencia),
-``GHOSTMIND_LLM=1`` y ``ANTHROPIC_API_KEY`` (redacción asistida por modelo de lenguaje).
+Variables de entorno opcionales: ``GHOSTMIND_DB`` (base principal; las bases de los demás proyectos
+quedan en la misma carpeta), ``GHOSTMIND_LLM=1`` y ``ANTHROPIC_API_KEY`` (redacción asistida por
+modelo de lenguaje). Enlace directo: ``?proyecto=seguros&ejecucion=1&regla=GM-05``.
 """
 
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -24,13 +24,14 @@ if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
 from ghostmind import redactor_llm  # noqa: E402
-from ghostmind.adaptador import ObjetivoDesconocido, listar_objetivos  # noqa: E402
+from ghostmind.adaptador import ObjetivoDesconocido  # noqa: E402
 from ghostmind.catalogo import exportar, historial, revisar  # noqa: E402
 from ghostmind.diccionario import Diccionario  # noqa: E402
 from ghostmind.explorador import Explorador, Parametros  # noqa: E402
 from ghostmind.muestreo import tamano_muestreo_inicial  # noqa: E402
+from ghostmind.proyectos import PROYECTO_POR_DEFECTO, Proyecto, atributos, cargar_proyectos  # noqa: E402
+from ghostmind.registro import BaseDeOtroDiccionario, Registro  # noqa: E402
 from ghostmind.verificador import Verificador  # noqa: E402
-from ghostmind.registro import Registro, ruta_por_defecto  # noqa: E402
 from ghostmind.reglas import Caja, formato_miles  # noqa: E402
 
 ESTADOS = {
@@ -40,7 +41,12 @@ ESTADOS = {
     "rechazada": "Rechazada",
 }
 COLOR_ESTADO = {"hipotesis": "gray", "corroborada": "blue", "validada": "green", "rechazada": "red"}
-COLOR_DECISION = {"APROBADO": "green", "RECHAZADO": "red", "REVISION_MANUAL": "orange"}
+COLOR_TONO = {"positivo": "green", "negativo": "red", "intermedio": "orange", "neutro": "gray"}
+# Al cambiar de proyecto se olvida todo lo que depende de su base o de su diccionario. Cada widget
+# recibe después un valor válido por medio de st.session_state (y no solo se borra), para que el
+# navegador muestre ese valor y no el que tenía en el otro proyecto.
+ESTADO_DEL_PROYECTO = ("ejecucion", "regla", "verificacion", "objetivo_verificacion", "nuevo_objetivo",
+                       "filtro_decision", "mensaje")
 MOTIVOS = {
     "estable": "Estable",
     "presupuesto_agotado": "Presupuesto",
@@ -62,6 +68,10 @@ MILES = "replace(format(datum.value, ','), ',', '.')"  # separador de miles en e
 
 st.set_page_config(page_title="GhostMind IA - Catálogo de reglas", page_icon=":material/fact_check:",
                    layout="wide")
+
+
+def etiqueta_decision(decision: str, dic: Diccionario) -> str:
+    return f":{COLOR_TONO[dic.tono_decision(decision)]}-badge[{decision}]"
 
 
 def mostrar_mensaje_pendiente() -> None:
@@ -183,16 +193,17 @@ def seccion_reglas(registro: Registro, dic: Diccionario, reglas: list[dict], fil
 
     st.subheader("Detalle de la regla")
     por_codigo = {r["codigo"]: r for r in filtradas}
-    if "regla" in st.session_state and st.session_state["regla"] not in por_codigo:
-        del st.session_state["regla"]  # la regla elegida no existe en esta ejecución o en estos filtros
     pedida = st.query_params.get("regla")
     if "regla" not in st.session_state and pedida in por_codigo:
         st.session_state["regla"] = pedida
+    elif st.session_state.get("regla") not in por_codigo:
+        # la regla elegida no existe en esta ejecución o en estos filtros
+        st.session_state["regla"] = next(iter(por_codigo))
     codigo = st.selectbox("Regla", list(por_codigo), key="regla",
                           format_func=lambda c: f"{c} · {por_codigo[c]['decision']}")
     regla = por_codigo[codigo]
 
-    st.markdown(f":{COLOR_DECISION[regla['decision']]}-badge[{regla['decision']}] "
+    st.markdown(f"{etiqueta_decision(regla['decision'], dic)} "
                 f":{COLOR_ESTADO[regla['estado']]}-badge[{ESTADOS[regla['estado']]}]")
     if regla["texto_llm"]:
         st.markdown(f"**{regla['texto_llm']}**")
@@ -309,16 +320,22 @@ def seccion_convergencia(registro: Registro, dic: Diccionario, eid: int) -> None
             )
 
 
-def seccion_verificacion(registro: Registro, dic: Diccionario, eid: int, reglas: list[dict]) -> None:
+def seccion_verificacion(registro: Registro, dic: Diccionario, eid: int, reglas: list[dict],
+                         proyecto: Proyecto) -> None:
     st.markdown("Repite los casos registrados en este descubrimiento sobre otra versión del sistema y "
                 "muestra en qué reglas cambian las decisiones.")
-    objetivos = list(listar_objetivos())
+    objetivos = list(proyecto.cajas_negras)
+    sugerido = objetivos.index("modernizado") if "modernizado" in objetivos else 0
+    if len(objetivos) == 1:
+        st.caption("Este proyecto tiene una sola caja negra: verificarla contra sí misma sirve de control "
+                   "y debe dar cero diferencias.")
+    if st.session_state.get("objetivo_verificacion") not in objetivos:
+        st.session_state["objetivo_verificacion"] = objetivos[sugerido]
     c1, c2 = st.columns([3, 1], vertical_alignment="bottom")
-    objetivo = c1.selectbox("Versión a comparar", objetivos, key="objetivo_verificacion",
-                            index=objetivos.index("modernizado") if "modernizado" in objetivos else 0)
+    objetivo = c1.selectbox("Versión a comparar", objetivos, key="objetivo_verificacion")
     if c2.button("Ejecutar verificación", key="verificar", width="stretch"):
         with st.spinner("Repitiendo los casos registrados..."):
-            resultado = Verificador(dic, registro, objetivo).verificar(eid)
+            resultado = Verificador(dic, registro, objetivo, proyecto=proyecto.clave).verificar(eid)
         st.session_state["mensaje"] = (
             "ok", f"Verificación {resultado.ejecucion_id} terminada: {resultado.diferencias} diferencias.")
         st.session_state["verificacion"] = resultado.ejecucion_id
@@ -327,7 +344,8 @@ def seccion_verificacion(registro: Registro, dic: Diccionario, eid: int, reglas:
     verificaciones = {v["id"]: v for v in registro.ejecuciones("verificacion") if v["ejecucion_base_id"] == eid}
     if not verificaciones:
         st.info("Todavía no hay verificaciones de este descubrimiento. Usa el botón de arriba o ejecuta: "
-                f"`python -m ghostmind verificar --ejecucion {eid} --objetivo modernizado`")
+                f"`python -m ghostmind verificar --proyecto {proyecto.clave} --ejecucion {eid} "
+                f"--objetivo {objetivos[sugerido]}`")
         return
     opciones = sorted(verificaciones, reverse=True)
     if st.session_state.get("verificacion") not in opciones:
@@ -380,42 +398,70 @@ def seccion_verificacion(registro: Registro, dic: Diccionario, eid: int, reglas:
         st.dataframe(vista.rename(columns=nombres), hide_index=True, width="stretch")
 
 
-def tabla_campos(dic: Diccionario) -> pd.DataFrame:
-    """Lo único que GhostMind sabe de la caja negra: nombre, tipo y rango de cada campo."""
-    filas = []
-    for campo in dic.campos:
-        if campo.es_numerico:
-            valores = f"{formato_miles(campo.minimo)} a {formato_miles(campo.maximo)} {campo.unidad or ''}".strip()
-        else:
-            valores = ", ".join(campo.etiqueta_valor(v) for v in campo.nombres_valores)
-        filas.append({"Campo": campo.etiqueta.capitalize(), "Valores posibles": valores})
-    return pd.DataFrame(filas)
+def olvidar_estado_del_proyecto() -> None:
+    """Al cambiar de proyecto, la ejecución, la regla y los filtros elegidos dejan de existir."""
+    for clave in ESTADO_DEL_PROYECTO:
+        st.session_state.pop(clave, None)
+    st.session_state["nota"] = ""
+    st.query_params.clear()
+    st.query_params["proyecto"] = st.session_state["proyecto"]
 
 
-def seccion_nuevo_descubrimiento(registro: Registro, dic: Diccionario, hay_ejecuciones: bool) -> None:
-    """Barra lateral: elegir la caja negra y lanzar un descubrimiento (FR-028)."""
-    objetivos = listar_objetivos()
+def elegir_proyecto(proyectos: dict[str, Proyecto]) -> Proyecto:
+    """Barra lateral: el sistema legacy que se va a descifrar (FR-030)."""
+    if "proyecto" not in st.session_state:
+        pedido = st.query_params.get("proyecto")
+        st.session_state["proyecto"] = pedido if pedido in proyectos else PROYECTO_POR_DEFECTO
+    clave = st.sidebar.selectbox(
+        "Proyecto", list(proyectos), key="proyecto", format_func=lambda c: proyectos[c].nombre,
+        on_change=olvidar_estado_del_proyecto,
+        help="Sistema legacy que se va a descifrar. Cada proyecto tiene sus propios atributos, sus cajas "
+             "negras y su base de evidencia.",
+    )
+    return proyectos[clave]
+
+
+def seccion_proyecto(proyecto: Proyecto, dic: Diccionario, hay_ejecuciones: bool) -> None:
+    """Atributos del proyecto elegido: lo único que GhostMind conoce de sus cajas negras (FR-031)."""
+    st.subheader(proyecto.nombre)
+    st.caption(proyecto.descripcion)
+    with st.expander(f"Atributos del sistema ({len(dic.campos)}): lo único que GhostMind conoce de él",
+                     expanded=not hay_ejecuciones, icon=":material/table_rows:"):
+        decisiones = " ".join(etiqueta_decision(d, dic) for d in dic.decisiones)
+        st.markdown(f"Registro de ancho fijo de **{dic.longitud_registro} posiciones**. "
+                    f"Decisiones posibles: {decisiones}")
+        st.dataframe(pd.DataFrame(atributos(dic)), hide_index=True, width="stretch",
+                     column_config={"Límites o valores": st.column_config.TextColumn(width="large")})
+        st.caption("GhostMind no lee el código de las cajas negras: solo arma solicitudes con estos atributos "
+                   "y observa la decisión que devuelven.")
+
+
+def seccion_nuevo_descubrimiento(registro: Registro, dic: Diccionario, proyecto: Proyecto,
+                                 hay_ejecuciones: bool) -> None:
+    """Barra lateral: elegir la caja negra del proyecto y lanzar un descubrimiento (FR-028)."""
+    cajas = proyecto.cajas_negras
+    muestreo = tamano_muestreo_inicial(dic)
     with st.sidebar.expander("Nuevo descubrimiento", expanded=not hay_ejecuciones, icon=":material/travel_explore:"):
-        st.caption("Elige la caja negra que GhostMind va a descifrar. Solo la consulta por el adaptador: "
-                   "no lee su código.")
-        objetivo = st.selectbox("Caja negra", list(objetivos), key="nuevo_objetivo")
-        if objetivos[objetivo]:
-            st.caption(objetivos[objetivo])
-        st.markdown("**Lo que GhostMind conoce de ella**")
-        st.markdown("\n".join(f"- **{fila['Campo']}**: {fila['Valores posibles']}"
-                              for fila in tabla_campos(dic).to_dict("records")))
+        st.caption("Elige la caja negra que GhostMind va a descifrar. Solo la consulta por el adaptador "
+                   "con los atributos del proyecto: no lee su código.")
+        if st.session_state.get("nuevo_objetivo") not in cajas:
+            st.session_state["nuevo_objetivo"] = next(iter(cajas))
+        objetivo = st.selectbox("Caja negra", list(cajas), key="nuevo_objetivo")
+        if cajas[objetivo].descripcion:
+            st.caption(cajas[objetivo].descripcion)
         st.number_input("Semilla", min_value=0, max_value=1_000_000, value=42, step=1, key="nuevo_semilla",
                         help="La misma semilla repite exactamente las mismas consultas y reglas.")
-        st.number_input("Presupuesto de consultas", min_value=tamano_muestreo_inicial(dic), max_value=200_000,
+        st.number_input("Presupuesto de consultas", min_value=muestreo, max_value=200_000,
                         value=20_000, step=1_000, key="nuevo_presupuesto",
-                        help="Máximo de consultas a la caja negra; el muestreo inicial usa 720.")
+                        help=f"Máximo de consultas a la caja negra; el muestreo inicial de este proyecto usa "
+                             f"{formato_miles(muestreo)}.")
         if st.button("Descubrir reglas", key="nuevo_descubrir", type="primary", width="stretch"):
             semilla = int(st.session_state["nuevo_semilla"])
             presupuesto = int(st.session_state["nuevo_presupuesto"])
             try:
-                with st.spinner(f"Consultando '{objetivo}'..."):
-                    resultado = Explorador(dic, registro, objetivo, semilla,
-                                           Parametros(presupuesto=presupuesto)).descubrir()
+                with st.spinner(f"Consultando '{objetivo}' del proyecto {proyecto.nombre}..."):
+                    resultado = Explorador(dic, registro, objetivo, semilla, Parametros(presupuesto=presupuesto),
+                                           proyecto=proyecto.clave).descubrir()
             except (ValueError, ObjetivoDesconocido) as exc:
                 st.error(f"No se pudo descubrir: {exc}")
                 return
@@ -429,16 +475,20 @@ def seccion_nuevo_descubrimiento(registro: Registro, dic: Diccionario, hay_ejecu
             st.rerun()
 
 
-def principal(registro: Registro, dic: Diccionario, ruta: Path) -> None:
+def principal(registro: Registro, dic: Diccionario, ruta: Path, proyecto: Proyecto) -> None:
     st.title("GhostMind IA")
-    st.caption("Catálogo de reglas de negocio descubiertas observando el sistema legacy como caja negra. "
+    st.caption("Catálogo de reglas de negocio descubiertas observando un sistema legacy como caja negra. "
                "Ninguna regla se acepta sola: el especialista valida o rechaza cada una.")
     ejecuciones = registro.ejecuciones("descubrimiento")
-    seccion_nuevo_descubrimiento(registro, dic, hay_ejecuciones=bool(ejecuciones))
+    seccion_nuevo_descubrimiento(registro, dic, proyecto, hay_ejecuciones=bool(ejecuciones))
+    seccion_proyecto(proyecto, dic, hay_ejecuciones=bool(ejecuciones))
     if not ejecuciones:
-        st.info(f"Todavía no hay ejecuciones de descubrimiento en `{ruta.name}`. Elige una caja negra en "
-                "**Nuevo descubrimiento** (barra lateral) y pulsa *Descubrir reglas*, o ejecuta en la raíz del "
-                "repositorio: `python -m ghostmind descubrir --objetivo legacy --semilla 42`")
+        mostrar_mensaje_pendiente()
+        primera = next(iter(proyecto.cajas_negras))
+        st.info(f"Todavía no hay ejecuciones de descubrimiento de este proyecto en `{ruta.name}`. Elige una caja "
+                "negra en **Nuevo descubrimiento** (barra lateral) y pulsa *Descubrir reglas*, o ejecuta en la raíz "
+                f"del repositorio: `python -m ghostmind descubrir --proyecto {proyecto.clave} --objetivo {primera} "
+                "--semilla 42`")
         st.stop()
 
     por_id = {e["id"]: e for e in ejecuciones}
@@ -446,6 +496,10 @@ def principal(registro: Registro, dic: Diccionario, ruta: Path) -> None:
     pedida = st.query_params.get("ejecucion")
     if "ejecucion" not in st.session_state and pedida and pedida.isdigit() and int(pedida) in por_id:
         st.session_state["ejecucion"] = int(pedida)
+    elif st.session_state.get("ejecucion") not in por_id:
+        st.session_state["ejecucion"] = max(por_id)  # la más reciente
+    if any(d not in dic.decisiones for d in st.session_state.get("filtro_decision", [None])):
+        st.session_state["filtro_decision"] = list(dic.decisiones)
     with st.sidebar:
         st.header("Ejecución")
         eid = st.selectbox(
@@ -455,8 +509,7 @@ def principal(registro: Registro, dic: Diccionario, ruta: Path) -> None:
         )
         st.header("Filtros")
         filtros = {
-            "decisiones": st.multiselect("Decisión", list(dic.decisiones), default=list(dic.decisiones),
-                                         key="filtro_decision"),
+            "decisiones": st.multiselect("Decisión", list(dic.decisiones), key="filtro_decision"),
             "estados": st.multiselect("Estado", list(ESTADOS), default=list(ESTADOS), format_func=ESTADOS.get,
                                       key="filtro_estado"),
             "confianza": st.slider("Confianza mínima (%)", 0, 100, 0, key="filtro_confianza"),
@@ -491,13 +544,18 @@ def principal(registro: Registro, dic: Diccionario, ruta: Path) -> None:
     with pestanas[1]:
         seccion_convergencia(registro, dic, eid)
     with pestanas[2]:
-        seccion_verificacion(registro, dic, eid, reglas)
+        seccion_verificacion(registro, dic, eid, reglas, proyecto)
 
 
-dic = Diccionario.cargar()
-ruta_db = Path(os.environ.get("GHOSTMIND_DB") or ruta_por_defecto())
-registro = Registro(ruta_db, dic)
+proyecto = elegir_proyecto(cargar_proyectos())
+dic = proyecto.diccionario()
+ruta_db = proyecto.ruta_base()
 try:
-    principal(registro, dic, ruta_db)
+    registro = Registro(ruta_db, dic)
+except BaseDeOtroDiccionario as exc:
+    st.error(str(exc))
+    st.stop()
+try:
+    principal(registro, dic, ruta_db, proyecto)
 finally:
     registro.cerrar()

@@ -8,14 +8,12 @@ módulo de GhostMind llama a un sistema (contracts/adaptador.md).
 from __future__ import annotations
 
 import importlib
-import json
 from pathlib import Path
 from typing import Callable
 
-from ghostmind.diccionario import RAIZ, Diccionario, Solicitud
+from ghostmind.diccionario import Diccionario, Solicitud
+from ghostmind.proyectos import PROYECTO_POR_DEFECTO, RUTA_PROYECTOS, obtener_proyecto
 from ghostmind.registro import ORIGENES, Registro
-
-RUTA_OBJETIVOS = RAIZ / "sistemas" / "objetivos.json"
 
 PuntoDeEntrada = Callable[[str], str]
 
@@ -29,40 +27,42 @@ class ErrorDelSistema(RuntimeError):
 
 
 class ObjetivoDesconocido(KeyError):
-    """El nombre de objetivo no está en ``sistemas/objetivos.json``."""
+    """La caja negra no está declarada en el proyecto (``sistemas/proyectos.json``)."""
+
+    def __str__(self) -> str:  # KeyError muestra el mensaje entre comillas
+        return str(self.args[0]) if self.args else ""
 
 
-def _leer_objetivos(ruta_objetivos: Path | str) -> dict[str, dict[str, str]]:
-    """Lee la lista de cajas negras; acepta el valor como texto (formato anterior) o como objeto."""
-    crudos = json.loads(Path(ruta_objetivos).read_text(encoding="utf-8"))
-    objetivos = {}
-    for nombre, valor in crudos.items():
-        if isinstance(valor, str):
-            valor = {"punto_de_entrada": valor, "descripcion": ""}
-        objetivos[nombre] = {"punto_de_entrada": valor["punto_de_entrada"],
-                             "descripcion": valor.get("descripcion", "")}
-    return objetivos
+def listar_objetivos(proyecto: str = PROYECTO_POR_DEFECTO,
+                     ruta_proyectos: Path | str = RUTA_PROYECTOS) -> dict[str, str]:
+    """Cajas negras del proyecto (nombres válidos para ``--objetivo``) con su descripción."""
+    cajas = obtener_proyecto(proyecto, ruta_proyectos).cajas_negras
+    return {nombre: caja.descripcion for nombre, caja in cajas.items()}
 
 
-def listar_objetivos(ruta_objetivos: Path | str = RUTA_OBJETIVOS) -> dict[str, str]:
-    """Cajas negras disponibles (nombres válidos para ``--objetivo``) con su descripción."""
-    return {nombre: datos["descripcion"] for nombre, datos in _leer_objetivos(ruta_objetivos).items()}
-
-
-def resolver_objetivo(nombre: str, ruta_objetivos: Path | str = RUTA_OBJETIVOS) -> PuntoDeEntrada:
-    """Obtiene el punto de entrada declarado para un objetivo, sin leer su código."""
-    objetivos = _leer_objetivos(ruta_objetivos)
-    if nombre not in objetivos:
-        raise ObjetivoDesconocido(f"Objetivo desconocido: {nombre!r}. Opciones: {sorted(objetivos)}")
-    modulo, funcion = objetivos[nombre]["punto_de_entrada"].split(":")
+def resolver_objetivo(nombre: str, proyecto: str = PROYECTO_POR_DEFECTO,
+                      ruta_proyectos: Path | str = RUTA_PROYECTOS) -> PuntoDeEntrada:
+    """Obtiene el punto de entrada declarado para una caja negra del proyecto, sin leer su código."""
+    cajas = obtener_proyecto(proyecto, ruta_proyectos).cajas_negras
+    if nombre not in cajas:
+        raise ObjetivoDesconocido(
+            f"Caja negra desconocida en el proyecto {proyecto!r}: {nombre!r}. Opciones: {list(cajas)}")
+    modulo, funcion = cajas[nombre].punto_de_entrada.split(":")
     return getattr(importlib.import_module(modulo), funcion)
+
+
+def comprobar_diccionario(diccionario: Diccionario, proyecto: str = PROYECTO_POR_DEFECTO) -> None:
+    """Evita consultar las cajas negras de un proyecto con el diccionario de otro."""
+    esperado = obtener_proyecto(proyecto).diccionario()
+    if (diccionario.nombres, diccionario.longitud_registro) != (esperado.nombres, esperado.longitud_registro):
+        raise ValueError(f"El diccionario recibido no es el del proyecto {proyecto!r}.")
 
 
 class Adaptador:
     """Envía solicitudes a un sistema y registra cada respuesta."""
 
     def __init__(self, diccionario: Diccionario, objetivo: str | PuntoDeEntrada, registro: Registro,
-                 ejecucion_id: int, presupuesto: int):
+                 ejecucion_id: int, presupuesto: int, proyecto: str = PROYECTO_POR_DEFECTO):
         if presupuesto <= 0:
             raise ValueError("El presupuesto debe ser positivo.")
         self.diccionario = diccionario
@@ -73,8 +73,9 @@ class Adaptador:
             self.objetivo = getattr(objetivo, "__name__", "personalizado")
             self._sistema = objetivo
         else:
+            comprobar_diccionario(diccionario, proyecto)
             self.objetivo = objetivo
-            self._sistema = resolver_objetivo(objetivo)
+            self._sistema = resolver_objetivo(objetivo, proyecto)
         self.consultas = registro.contar_casos(ejecucion_id)
         self.errores = 0
 

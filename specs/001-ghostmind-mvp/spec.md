@@ -248,11 +248,33 @@ semilla.
   todavía no hay ejecuciones.
 - **FR-029**: La línea de comandos debe listar las cajas negras disponibles con su descripción.
 
+**Proyectos con atributos propios (agregado el 2026-11-15, Fase 9)**
+
+- **FR-030**: GhostMind debe trabajar por proyectos. Cada proyecto registrado tiene nombre,
+  descripción, su propio diccionario de atributos y una o más cajas negras que reciben el mismo
+  registro. El proyecto por defecto es el de créditos, con las cajas negras `legacy` y `modernizado`.
+- **FR-031**: Al elegir un proyecto en el catálogo deben verse sus atributos (nombre, tipo, límites
+  con su unidad o valores permitidos, y posición en el registro) y sus decisiones posibles, antes de
+  lanzar un descubrimiento.
+- **FR-032**: La evidencia de cada proyecto se guarda en su propia base. Ejecuciones, filtros,
+  verificación y exportación trabajan sobre el proyecto elegido. El registro debe negarse a abrir una
+  base creada con otro diccionario.
+- **FR-033**: Las órdenes de línea de comandos aceptan `--proyecto` (por defecto `credito`), y
+  `python -m ghostmind proyectos` lista los proyectos con sus cajas negras y sus atributos.
+- **FR-034**: Debe incluirse un segundo proyecto simulado, con atributos y decisiones distintos
+  (reclamaciones de seguro de auto), para demostrar el cambio de sistema. Sus reglas plantadas quedan
+  en un archivo aparte que GhostMind no lee, y no forma parte de C1 a C5.
+- **FR-035**: La redacción por plantilla debe usar las frases de decisión del diccionario de cada
+  proyecto, sin cambiar ninguna redacción del proyecto de crédito.
+
 ### Entidades clave
 
 - **Diccionario de campos**: nombre, tipo (entero o categórico), rango o valores permitidos de cada
   entrada, y decisiones posibles.
-- **Solicitud**: un valor para cada uno de los 8 campos.
+- **Solicitud**: un valor para cada atributo del diccionario del proyecto (8 en los dos proyectos
+  incluidos).
+- **Proyecto** *(Fase 9)*: nombre, descripción, diccionario de atributos, cajas negras registradas
+  y base de evidencia propia.
 - **Consulta**: una solicitud enviada al sistema y la decisión recibida, con ejecución, ronda,
   origen del caso, sistema consultado y momento.
 - **Ejecución**: un descubrimiento o una verificación con su semilla, presupuesto, número de

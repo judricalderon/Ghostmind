@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "sistema": "SINAUT01",
+  "nota": "Reglas plantadas en el legacy simulado del proyecto de demostración de seguros (research.md, D15). Solo las leen las pruebas y el equipo; no forman parte de C1 a C5. Se evalúan en orden; decide la primera que se cumple. Límites enteros inclusivos; un límite omitido es el del dominio.",
+  "decision_por_defecto": "PAGAR",
+  "reglas": [
+    {
+      "id": "S01",
+      "tipo": "excepcion",
+      "descripcion": "Pago rápido: con cobertura todo riesgo, las reclamaciones de 5.000.000 o menos se pagan.",
+      "condiciones": {"cobertura": {"valores": ["PLENA"]}, "valor_reclamado": {"max": 5000000}},
+      "decision": "PAGAR"
+    },
+    {
+      "id": "S02",
+      "tipo": "general",
+      "descripcion": "La cobertura básica no cubre hurto: se objeta.",
+      "condiciones": {"cobertura": {"valores": ["BASICA"]}, "tipo_siniestro": {"valores": ["HURTO"]}},
+      "decision": "OBJETAR"
+    },
+    {
+      "id": "S03",
+      "tipo": "general",
+      "descripcion": "Aviso tardío: se objeta si el aviso llega 91 días o más después del siniestro.",
+      "condiciones": {"dias_aviso": {"min": 91}},
+      "decision": "OBJETAR"
+    },
+    {
+      "id": "S04",
+      "tipo": "general",
+      "descripcion": "Se objeta si el conductor tiene 17 años o menos.",
+      "condiciones": {"edad_conductor": {"max": 17}},
+      "decision": "OBJETAR"
+    },
+    {
+      "id": "S05",
+      "tipo": "general",
+      "descripcion": "Póliza nueva: si tiene 29 días o menos, la reclamación pasa a investigación.",
+      "condiciones": {"antiguedad_poliza": {"max": 29}},
+      "decision": "INVESTIGAR"
+    },
+    {
+      "id": "S06",
+      "tipo": "general",
+      "descripcion": "Con 6 o más reclamaciones previas, la reclamación pasa a investigación.",
+      "condiciones": {"reclamos_previos": {"min": 6}},
+      "decision": "INVESTIGAR"
+    },
+    {
+      "id": "S07",
+      "tipo": "excepcion",
+      "descripcion": "Las pérdidas totales por más de 80.000.000 pasan a investigación.",
+      "condiciones": {"tipo_siniestro": {"valores": ["PERDIDA_TOTAL"]}, "valor_reclamado": {"min": 80000001}},
+      "decision": "INVESTIGAR"
+    }
+  ]
+}

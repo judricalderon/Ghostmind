@@ -21,10 +21,17 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
-from ghostmind.adaptador import Adaptador, ErrorDelSistema, PresupuestoAgotado, resolver_objetivo
+from ghostmind.adaptador import (
+    Adaptador,
+    ErrorDelSistema,
+    PresupuestoAgotado,
+    comprobar_diccionario,
+    resolver_objetivo,
+)
 from ghostmind.diccionario import Diccionario, Solicitud
 from ghostmind.extractor import Extractor, Hoja, Modelo
 from ghostmind.muestreo import PARAMETROS_POR_DEFECTO, muestreo_inicial, tamano_muestreo_inicial
+from ghostmind.proyectos import PROYECTO_POR_DEFECTO
 from ghostmind.registro import Registro
 from ghostmind.reglas import Regla
 
@@ -66,10 +73,11 @@ class Explorador:
     """Descubre las reglas de un sistema consultándolo solo por medio del adaptador."""
 
     def __init__(self, dic: Diccionario, registro: Registro, objetivo: str | Callable[[str], str],
-                 semilla: int, parametros: Parametros | None = None):
+                 semilla: int, parametros: Parametros | None = None, proyecto: str = PROYECTO_POR_DEFECTO):
         self.dic = dic
         self.registro = registro
         self.objetivo = objetivo
+        self.proyecto = proyecto
         self.semilla = semilla
         self.p = parametros or Parametros()
         self.rng = np.random.default_rng(semilla)
@@ -137,7 +145,8 @@ class Explorador:
                 f"El presupuesto ({self.p.presupuesto}) es menor que el muestreo inicial ({tamano})."
             )
         if isinstance(self.objetivo, str):
-            nombre_objetivo, punto_de_entrada = self.objetivo, resolver_objetivo(self.objetivo)
+            comprobar_diccionario(self.dic, self.proyecto)
+            nombre_objetivo, punto_de_entrada = self.objetivo, resolver_objetivo(self.objetivo, self.proyecto)
         else:
             nombre_objetivo = getattr(self.objetivo, "__name__", "personalizado")
             punto_de_entrada = self.objetivo

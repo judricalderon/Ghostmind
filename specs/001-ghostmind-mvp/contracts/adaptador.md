@@ -5,7 +5,7 @@
 ```python
 class Adaptador:
     def __init__(self, diccionario: Diccionario, objetivo: str, registro: Registro,
-                 ejecucion_id: int, presupuesto: int): ...
+                 ejecucion_id: int, presupuesto: int, proyecto: str = "credito"): ...
 
     consultas: int          # consultas hechas al sistema por esta instancia
     restantes: int          # presupuesto - consultas
@@ -20,7 +20,8 @@ Comportamiento:
    `SolicitudInvalida` sin llamar al sistema y sin contar la consulta.
 2. Si `restantes == 0`, lanza `PresupuestoAgotado` sin llamar al sistema.
 3. Arma el registro de ancho fijo y llama al punto de entrada del objetivo, que se resuelve a
-   partir de `sistemas/objetivos.json` al crear el adaptador.
+   partir de la caja negra del proyecto en `sistemas/proyectos.json` al crear el adaptador
+   (`resolver_objetivo(nombre, proyecto="credito")`, Fase 9).
 4. Cuenta la consulta. Si el sistema lanza una excepción o devuelve un valor que no está en
    `decisiones`, guarda el caso con `decision = NULL` y el `error`, y lanza `ErrorDelSistema`.
 5. Si no hay error, guarda el caso con su decisión, ronda y origen, y devuelve la decisión.

@@ -3,7 +3,7 @@
 Hay dos espacios de datos separados. El de GhostMind (diccionario, registro SQLite y catálogo) y el
 de la evaluación (reglas verdaderas y alteraciones). GhostMind nunca lee el segundo.
 
-## 1. Diccionario de campos (`sistemas/diccionario_credito.json`)
+## 1. Diccionario de campos (`sistemas/diccionario_*.json`, uno por proyecto)
 
 Lo único que GhostMind sabe del sistema. Formato en [contracts/diccionario.md](contracts/diccionario.md).
 
@@ -12,12 +12,15 @@ Lo único que GhostMind sabe del sistema. Formato en [contracts/diccionario.md](
 - `campos[]`: `nombre`, `etiqueta`, `tipo` (`entero` o `categorico`), `unidad`, `minimo` y
   `maximo` (enteros) o `valores[]` con `valor` y `codigo`; `inicio` y `longitud` dentro del
   registro.
-- `decisiones[]`: `APROBADO`, `RECHAZADO`, `REVISION_MANUAL`.
+- `decisiones[]`: `APROBADO`, `RECHAZADO`, `REVISION_MANUAL` en crédito. Desde la Fase 9 cada
+  decisión puede traer sus frases ([contracts/proyectos.md](contracts/proyectos.md)).
 
 Validaciones: los nombres son únicos; `minimo` ≤ `maximo`; los campos no se traslapan en el
 registro; cada código cabe en su longitud.
 
-## 2. Registro de evidencia (SQLite, `datos/ghostmind.sqlite`)
+## 2. Registro de evidencia (SQLite, una base por proyecto)
+
+El proyecto de crédito usa `datos/ghostmind.sqlite`; el de seguros, `datos/seguros.sqlite` (Fase 9).
 
 ### `ejecuciones`
 
@@ -47,8 +50,8 @@ Una fila por consulta, escrita antes de devolver la decisión al explorador.
 | `n_consulta` | INTEGER | 1, 2, 3, ... dentro de la ejecución |
 | `ronda` | INTEGER | 0 para el muestreo inicial |
 | `origen` | TEXT | `aleatorio`, `limite`, `categoria`, `biseccion`, `contraejemplo`, `exploracion_local`, `verificacion` |
-| 8 columnas de campos | INTEGER o TEXT | valores dentro del diccionario |
-| `decision` | TEXT NULL | una de las 3 decisiones; NULL si hubo error |
+| una columna por atributo | INTEGER o TEXT | valores dentro del diccionario del proyecto |
+| `decision` | TEXT NULL | una de las decisiones del diccionario; NULL si hubo error |
 | `error` | TEXT NULL | mensaje si el sistema falló o devolvió algo inesperado |
 | `caso_base_id` | INTEGER NULL | en verificación, el caso original repetido |
 | `momento` | TEXT | ISO 8601 |

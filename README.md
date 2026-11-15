@@ -10,6 +10,11 @@ Innovación (Universidad El Bosque, semestre 2026-2). Para controlar el alcance 
 pequeño y medible: un módulo legacy **simulado** de aprobación de créditos con 10 reglas plantadas que
 solo conoce el equipo, de modo que lo que GhostMind descubre puede compararse con la verdad.
 
+El sistema que se va a descifrar se elige como **proyecto**. Vienen dos: el de créditos (con su versión
+legacy y su versión modernizada), sobre el que se mide el experimento, y uno de demostración de
+reclamaciones de seguro de auto, con otros atributos y otras decisiones, que muestra que GhostMind no está
+atado a un solo sistema.
+
 ## Resultados del experimento
 
 Generados por ejecución real con `python -m evaluacion.experimento` (semilla 42, presupuesto de
@@ -32,9 +37,9 @@ robustez). Es el límite principal del método y queda documentado como tal.
 ## Cómo funciona
 
 ```text
- sistemas/diccionario_credito.json   (lo único que GhostMind sabe del sistema)
+ sistemas/proyectos.json + diccionario del proyecto   (lo único que GhostMind sabe del sistema)
                 │
- explorador ──► adaptador ──► sistema legacy (legacy/crdapr01.py, caja negra)
+ explorador ──► adaptador ──► sistema legacy (legacy/crdapr01.py o legacy/sinaut01.py, caja negra)
      ▲              │
      │              ▼
  extractor ◄── registro SQLite (cada consulta, su ronda y su origen)
@@ -111,10 +116,24 @@ python -m pytest
 python -m ghostmind descubrir --objetivo legacy --semilla 42 --presupuesto 20000
 ```
 
-`--objetivo` es la caja negra que se va a descifrar. Las disponibles están en
-`sistemas/objetivos.json` (`legacy` y `modernizado`) y se listan con `python -m ghostmind objetivos`.
-La evidencia queda en `datos/ghostmind.sqlite` (se cambia con `--db` o la variable `GHOSTMIND_DB`).
-Para volver a ver las reglas de una ejecución: `python -m ghostmind reglas --ejecucion 1`.
+`--objetivo` es la caja negra que se va a descifrar dentro del proyecto. `--proyecto` elige el sistema
+legacy; si se omite, es `credito`, cuyas cajas negras son `legacy` y `modernizado`. Para ver los proyectos,
+sus cajas negras y sus atributos (tipo, límites o valores y posición en el registro):
+
+```bash
+python -m ghostmind proyectos
+```
+
+Para descifrar el proyecto de demostración de seguros:
+
+```bash
+python -m ghostmind descubrir --proyecto seguros --objetivo legacy --semilla 42
+```
+
+Cada proyecto guarda su evidencia en su propia base: `datos/ghostmind.sqlite` para crédito y
+`datos/seguros.sqlite` para seguros (`--db` la cambia; `GHOSTMIND_DB` cambia la base principal, y las de
+los demás proyectos quedan en la misma carpeta). Para volver a ver las reglas de una ejecución:
+`python -m ghostmind reglas --ejecucion 1` (con `--proyecto seguros` para las de seguros).
 
 **3. Abrir el catálogo para el especialista**:
 
@@ -122,16 +141,21 @@ Para volver a ver las reglas de una ejecución: `python -m ghostmind reglas --ej
 streamlit run app/catalogo.py
 ```
 
-En la barra lateral, **Nuevo descubrimiento** permite elegir la caja negra, ver los campos que GhostMind
-conoce de ella, fijar la semilla y el presupuesto, y lanzar el descubrimiento sin usar la terminal; al
-terminar, el catálogo abre la ejecución nueva. El catálogo muestra las reglas con su redacción de negocio,
+Arriba en la barra lateral, **Proyecto** elige el sistema legacy. Al elegirlo, la tabla **Atributos del
+sistema** muestra lo único que GhostMind conoce de él: cada atributo con su tipo, sus límites o valores
+permitidos y su posición en el registro, y las decisiones posibles. **Nuevo descubrimiento** permite elegir
+la caja negra del proyecto, fijar la semilla y el presupuesto, y lanzar el descubrimiento sin usar la
+terminal; al terminar, el catálogo abre la ejecución nueva. El catálogo muestra las reglas con su redacción de negocio,
 condiciones, umbrales confirmados, confianza, estado y evidencia; permite validar o rechazar cada regla con
 una nota y descargar el catálogo en JSON. Las pestañas Convergencia y Verificación muestran cómo avanzó el
-descubrimiento y el resultado de la verificación. Se puede abrir directo una ejecución y una regla con
-`?ejecucion=1&regla=GM-05`.
+descubrimiento y el resultado de la verificación. Se puede abrir directo un proyecto, una ejecución y una
+regla con `?proyecto=credito&ejecucion=1&regla=GM-05`.
 
-Para descifrar otra caja negra con los mismos campos basta agregar su punto de entrada en
-`sistemas/objetivos.json`; si sus campos son distintos, necesita además su propio diccionario.
+Para descifrar otro sistema legacy se agrega un proyecto: su programa en `legacy/` con un punto de entrada
+que recibe el registro de ancho fijo y devuelve la decisión, su diccionario de atributos en `sistemas/`
+(formato en [contracts/diccionario.md](specs/001-ghostmind-mvp/contracts/diccionario.md)) y una entrada
+en `sistemas/proyectos.json` ([contracts/proyectos.md](specs/001-ghostmind-mvp/contracts/proyectos.md)).
+Una caja negra con los mismos atributos de un proyecto existente se agrega a ese proyecto.
 
 **4. Verificar la versión modernizada**:
 
@@ -139,7 +163,8 @@ Para descifrar otra caja negra con los mismos campos basta agregar su punto de e
 python -m ghostmind verificar --ejecucion 1 --objetivo modernizado
 ```
 
-Con `--objetivo legacy` sirve de control: debe dar cero diferencias.
+Con `--objetivo legacy` sirve de control: debe dar cero diferencias. Para otro proyecto se agrega
+`--proyecto`, igual que en las demás órdenes.
 
 **5. Exportar el catálogo**:
 
@@ -175,7 +200,8 @@ activarla, instalar `requirements-llm.txt` y definir las variables de entorno `G
 
 ## Demostración sin ejecutar nada
 
-Capturas generadas con `python -m evaluacion.capturas` sobre la ejecución real de la semilla 42:
+Capturas generadas con `python -m evaluacion.capturas` sobre la ejecución real de la semilla 42 (la
+última, sobre un descubrimiento real del proyecto de seguros con la misma semilla):
 
 | Catálogo de reglas | Detalle de una regla |
 |---|---|
@@ -184,6 +210,8 @@ Capturas generadas con `python -m evaluacion.capturas` sobre la ejecución real 
 | ![Revisión](resultados/capturas/03_revision_especialista.png) | ![Evidencia](resultados/capturas/04_evidencia.png) |
 | **Convergencia del descubrimiento** | **Verificación de la versión modernizada** |
 | ![Convergencia](resultados/capturas/05_convergencia.png) | ![Verificación](resultados/capturas/06_verificacion.png) |
+| **Otro proyecto: reclamaciones de seguro de auto** | |
+| ![Proyecto de seguros](resultados/capturas/07_proyecto_seguros.png) | |
 
 Para un video, el guion está en [docs/guion_video.md](docs/guion_video.md).
 
@@ -191,9 +219,9 @@ Para un video, el guion está en [docs/guion_video.md](docs/guion_video.md).
 
 | Carpeta | Contenido |
 |---------|-----------|
-| `sistemas/` | Diccionario de campos y puntos de entrada: lo único que GhostMind conoce del sistema |
-| `legacy/` | Sistema legacy simulado y su versión modernizada (GhostMind no los lee) |
-| `ghostmind/` | El producto: diccionario, adaptador, registro SQLite, muestreo, extractor, explorador, catálogo, redacción opcional y verificador |
+| `sistemas/` | Proyectos, diccionarios de atributos y puntos de entrada: lo único que GhostMind conoce de cada sistema |
+| `legacy/` | Sistemas legacy simulados (créditos con su versión modernizada, y seguros); GhostMind no los lee |
+| `ghostmind/` | El producto: proyectos, diccionario, adaptador, registro SQLite, muestreo, extractor, explorador, catálogo, redacción opcional y verificador |
 | `app/` | Interfaz del catálogo en Streamlit |
 | `evaluacion/` | Reglas verdaderas, alteraciones, métricas, experimento, capturas e instrumento de C4 (fuera de GhostMind) |
 | `resultados/` | Métricas, robustez, catálogo exportado y capturas, generados por ejecución real |
@@ -204,7 +232,8 @@ Para un video, el guion está en [docs/guion_video.md](docs/guion_video.md).
 
 ## Proceso de desarrollo
 
-El prototipo se construyó por fases (0 a 7) con un proceso dirigido por especificaciones usando
+El prototipo se construyó por fases (0 a 7, más la 8 y la 9 agregadas después para elegir la caja negra
+y el proyecto desde el catálogo) con un proceso dirigido por especificaciones usando
 [Spec Kit](https://github.com/github/spec-kit) 1.4.0: constitución
 ([.specify/memory/constitution.md](.specify/memory/constitution.md)), especificación con los criterios
 de éxito y su forma de cálculo fijados antes de las pruebas
@@ -224,3 +253,5 @@ cada fase.
   ingreso mínimo aparece en cuatro); todas existen, pero alargan el catálogo.
 - Las métricas usan distribución uniforme sobre el diccionario porque el escenario es sintético; no hay datos
   de ninguna organización real.
+- El proyecto de seguros es solo una demostración del cambio de sistema: sus reglas plantadas están en
+  `evaluacion/reglas_verdaderas_seguros.json` para las pruebas, pero no tiene metas ni entra en C1 a C5.

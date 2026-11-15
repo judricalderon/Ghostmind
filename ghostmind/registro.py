@@ -33,6 +33,14 @@ ORIGENES = (
 )
 
 
+class BaseDeOtroDiccionario(ValueError):
+    """La base se creó con los atributos de otro proyecto."""
+
+
+COLUMNAS_FIJAS_CASOS = {"id", "ejecucion_id", "n_consulta", "ronda", "origen", "decision", "error",
+                        "caso_base_id", "momento"}
+
+
 def ruta_por_defecto() -> Path:
     """Ruta de la base: variable ``GHOSTMIND_DB`` o ``datos/ghostmind.sqlite``."""
     return Path(os.environ.get("GHOSTMIND_DB", RUTA_POR_DEFECTO))
@@ -161,6 +169,13 @@ class Registro:
         self.con.executescript(_esquema(self.diccionario))
         self.con.commit()
         self._campos = self.diccionario.nombres
+        columnas = {fila["name"] for fila in self.con.execute("PRAGMA table_info(casos)")}
+        atributos = columnas - COLUMNAS_FIJAS_CASOS
+        if atributos != set(self._campos):
+            self.con.close()
+            raise BaseDeOtroDiccionario(
+                f"La base {self.ruta.name} se creó con otros atributos ({', '.join(sorted(atributos))}); "
+                "usa la base del proyecto que corresponde a este diccionario.")
 
     # Conexión
 

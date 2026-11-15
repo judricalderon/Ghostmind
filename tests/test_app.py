@@ -6,9 +6,16 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 from apoyo import ejecucion_pequena
+from ghostmind.proyectos import obtener_proyecto
 from ghostmind.registro import Registro
 
 APP = str(Path(__file__).resolve().parent.parent / "app" / "catalogo.py")
+
+
+def tabla_reglas(at):
+    tablas = [d.value for d in at.dataframe if "Código" in d.value.columns]
+    assert tablas, "falta la tabla de reglas"
+    return tablas[0]
 
 
 def abrir_app():
@@ -39,10 +46,10 @@ def test_sin_ejecuciones_muestra_ayuda(tmp_path, monkeypatch):
 def test_lista_de_reglas_y_filtros(base_con_ejecucion):
     _, resultado = base_con_ejecucion
     at = abrir_app()
-    tabla = at.dataframe[0].value
+    tabla = tabla_reglas(at)
     assert list(tabla["Código"]) == [r.codigo for r in resultado.reglas]
     at.multiselect(key="filtro_decision").set_value(["RECHAZADO"]).run()
-    tabla = at.dataframe[0].value
+    tabla = tabla_reglas(at)
     assert set(tabla["Decisión"]) == {"RECHAZADO"}
 
 
@@ -97,7 +104,7 @@ def test_descubrir_desde_la_interfaz_con_base_vacia(tmp_path, monkeypatch, dic):
     ejecuciones = reg.ejecuciones("descubrimiento")
     reg.cerrar()
     assert [(e["objetivo"], e["semilla"], e["presupuesto"]) for e in ejecuciones] == [("legacy", 42, 3000)]
-    assert at.dataframe and "Código" in at.dataframe[0].value.columns
+    assert "Código" in tabla_reglas(at).columns
 
 
 def test_la_ejecucion_nueva_queda_seleccionada(base_con_ejecucion, dic):
@@ -114,3 +121,63 @@ def test_la_ejecucion_nueva_queda_seleccionada(base_con_ejecucion, dic):
     assert nueva["id"] != resultado.ejecucion_id
     assert (nueva["objetivo"], nueva["semilla"]) == ("modernizado", 7)
     assert at.selectbox(key="ejecucion").value == nueva["id"]
+
+
+def tabla_atributos(at):
+    tablas = [d.value for d in at.dataframe if "Atributo" in d.value.columns]
+    assert tablas, "falta la tabla de atributos"
+    return tablas[0].set_index("Atributo")
+
+
+def test_selector_de_proyecto_y_atributos(tmp_path, monkeypatch):
+    monkeypatch.setenv("GHOSTMIND_DB", str(tmp_path / "vacia.sqlite"))
+    at = abrir_app()
+    assert at.selectbox(key="proyecto").value == "credito"
+    atributos = tabla_atributos(at)
+    assert atributos.loc["Edad", "Límites o valores"] == "18 a 80 años"
+    assert at.selectbox(key="nuevo_objetivo").options == ["legacy", "modernizado"]
+
+    at.selectbox(key="proyecto").select("seguros").run()
+    assert not at.exception, at.exception
+    atributos = tabla_atributos(at)
+    assert len(atributos) == 8
+    assert atributos.loc["Tiempo para dar aviso", "Límites o valores"] == "0 a 120 días"
+    assert atributos.loc["Tiempo para dar aviso", "Posición en el registro"] == "23 a 25"
+    assert atributos.loc["Cobertura", "Tipo"] == "Categórico"
+    assert at.selectbox(key="nuevo_objetivo").options == ["legacy"]
+    textos = " ".join(str(e.value) for e in at.info)
+    assert "--proyecto seguros" in textos
+
+
+def test_descubrir_en_otro_proyecto_usa_su_propia_base(tmp_path, monkeypatch, dic):
+    monkeypatch.setenv("GHOSTMIND_DB", str(tmp_path / "principal.sqlite"))
+    monkeypatch.delenv("GHOSTMIND_LLM", raising=False)
+    at = abrir_app()
+    at.selectbox(key="proyecto").select("seguros").run()
+    at.number_input(key="nuevo_presupuesto").set_value(1500)
+    at.button(key="nuevo_descubrir").click().run()
+    assert not at.exception, at.exception
+
+    reg = Registro(tmp_path / "seguros.sqlite", obtener_proyecto("seguros").diccionario())
+    assert [e["objetivo"] for e in reg.ejecuciones("descubrimiento")] == ["legacy"]
+    reg.cerrar()
+    principal = Registro(tmp_path / "principal.sqlite", dic)
+    assert principal.ejecuciones("descubrimiento") == []
+    principal.cerrar()
+
+    reglas = [d.value for d in at.dataframe if "Código" in d.value.columns][0]
+    assert set(reglas["Decisión"]) <= {"PAGAR", "OBJETAR", "INVESTIGAR"}
+    assert set(at.multiselect(key="filtro_decision").value) == {"PAGAR", "OBJETAR", "INVESTIGAR"}
+
+    at.selectbox(key="proyecto").select("credito").run()  # volver no arrastra filtros ni ejecución
+    assert not at.exception, at.exception
+    assert any("Todavía no hay ejecuciones" in str(e.value) for e in at.info)
+
+
+def test_enlace_directo_a_un_proyecto(tmp_path, monkeypatch):
+    monkeypatch.setenv("GHOSTMIND_DB", str(tmp_path / "vacia.sqlite"))
+    at = AppTest.from_file(APP, default_timeout=60)
+    at.query_params["proyecto"] = "seguros"
+    at.run()
+    assert not at.exception, at.exception
+    assert at.selectbox(key="proyecto").value == "seguros"

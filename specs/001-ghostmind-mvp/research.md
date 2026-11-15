@@ -205,3 +205,46 @@ nombradas) y altera exactamente tres reglas, que representan errores típicos de
   (excluida de git) y se regenera con una orden. `resultados/` sí se versiona.
 - **Razón**: el registro se regenera en minutos y es determinista; versionar resultados permite
   revisarlos sin ejecutar nada.
+
+## D15. Proyectos con atributos propios (Fase 9, agregada el 2026-11-15)
+
+**Decisión**: GhostMind trabaja por proyectos declarados en `sistemas/proyectos.json`
+([contracts/proyectos.md](contracts/proyectos.md)). Cada proyecto tiene nombre, descripción, su
+diccionario y sus cajas negras, que reciben el mismo registro. El proyecto por defecto es `credito`,
+con `legacy` y `modernizado`, y su evidencia sigue en la base principal (`GHOSTMIND_DB` o
+`datos/ghostmind.sqlite`). Cada uno de los demás usa su propio archivo en la misma carpeta.
+
+**Por qué una base por proyecto**: la tabla `casos` tiene una columna por atributo, lo que mantiene
+simples las consultas sobre la evidencia. Guardar los atributos como JSON permitiría una sola base,
+pero cambia el esquema y las consultas que usa la evaluación del experimento. El registro se niega a
+abrir una base creada con otro diccionario.
+
+**Frases de las decisiones**: la redacción por plantilla y el control de la redacción asistida
+necesitan saber cómo se dice cada decisión. El diccionario puede declarar cada decisión como objeto
+con `frase`, `frase_general`, `palabras` y `tono`. Si la declara solo como texto, se usan las frases
+conocidas de crédito o una frase genérica, de modo que ninguna redacción de crédito cambia.
+
+**Proyecto de demostración**: `seguros`, un módulo legacy simulado (SINAUT01) que decide si una
+reclamación de seguro de auto se paga, se objeta o pasa a investigación. Tiene un registro de 30
+posiciones con 8 atributos (6 enteros y 2 categóricos) y las decisiones `PAGAR`, `OBJETAR` e
+`INVESTIGAR`. Sus reglas plantadas, solo para el equipo y las pruebas, están en
+`evaluacion/reglas_verdaderas_seguros.json` y se evalúan en este orden:
+
+| Id | Condición | Decisión |
+|----|-----------|----------|
+| S01 | Cobertura todo riesgo y valor reclamado de 5.000.000 o menos (pago rápido) | PAGAR |
+| S02 | Cobertura básica y siniestro por hurto | OBJETAR |
+| S03 | Aviso dado 91 días o más después del siniestro | OBJETAR |
+| S04 | Conductor de 17 años o menos | OBJETAR |
+| S05 | Póliza con 29 días o menos de antigüedad | INVESTIGAR |
+| S06 | 6 o más reclamaciones previas | INVESTIGAR |
+| S07 | Pérdida total por más de 80.000.000 | INVESTIGAR |
+| Defecto | Ninguna de las anteriores | PAGAR |
+
+El valor asegurado del vehículo no interviene en ninguna regla, a propósito: es un atributo que no
+decide nada. Este proyecto no cambia las reglas plantadas de crédito (D4), las alteraciones (D11),
+las semillas ni las métricas. C1 a C5 se siguen midiendo solo sobre crédito.
+
+**Alternativa descartada**: cargar código o diccionarios desde el navegador. Ejecutaría código
+arbitrario y no aporta a la demostración. Agregar un proyecto es poner su programa en `legacy/`, su
+diccionario en `sistemas/` y una entrada en `proyectos.json`.

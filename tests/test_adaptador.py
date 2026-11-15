@@ -109,15 +109,29 @@ def test_listar_objetivos_con_descripcion():
     assert all(descripcion for descripcion in objetivos.values())
 
 
-def test_formato_anterior_de_objetivos(tmp_path):
+def test_caja_negra_solo_con_punto_de_entrada(tmp_path):
     import json
 
     from ghostmind.adaptador import listar_objetivos
 
-    ruta = tmp_path / "objetivos.json"
-    ruta.write_text(json.dumps({"legacy": "legacy.crdapr01:CRDAPR01"}), encoding="utf-8")
-    assert callable(resolver_objetivo("legacy", ruta))
-    assert listar_objetivos(ruta) == {"legacy": ""}
+    ruta = tmp_path / "proyectos.json"
+    ruta.write_text(json.dumps({"credito": {
+        "nombre": "Crédito", "descripcion": "", "diccionario": "diccionario_credito.json",
+        "cajas_negras": {"legacy": "legacy.crdapr01:CRDAPR01"}}}), encoding="utf-8")
+    assert callable(resolver_objetivo("legacy", "credito", ruta))
+    assert listar_objetivos("credito", ruta) == {"legacy": ""}
+
+
+def test_cajas_negras_por_proyecto():
+    from ghostmind.adaptador import listar_objetivos
+    from ghostmind.proyectos import ProyectoDesconocido
+
+    assert list(listar_objetivos("seguros")) == ["legacy"]
+    assert resolver_objetivo("legacy", "seguros") is not resolver_objetivo("legacy", "credito")
+    with pytest.raises(ObjetivoDesconocido):
+        resolver_objetivo("modernizado", "seguros")
+    with pytest.raises(ProyectoDesconocido):
+        resolver_objetivo("legacy", "nomina")
 
 
 def test_orden_objetivos(capsys):
@@ -126,3 +140,38 @@ def test_orden_objetivos(capsys):
     assert main(["objetivos"]) == 0
     salida = capsys.readouterr().out
     assert "legacy" in salida and "modernizado" in salida
+    assert main(["objetivos", "--proyecto", "seguros"]) == 0
+    salida = capsys.readouterr().out
+    assert "SINAUT01" in salida and "modernizado" not in salida
+
+
+def test_orden_proyectos(capsys):
+    from ghostmind.__main__ import main
+
+    assert main(["proyectos"]) == 0
+    salida = capsys.readouterr().out
+    for texto in ("credito", "seguros", "Créditos (CRDAPR01)", "Seguros de auto (SINAUT01)",
+                  "dias_aviso", "0 a 120 días", "PAGAR, OBJETAR, INVESTIGAR", "posiciones 23 a 25"):
+        assert texto in salida, texto
+
+
+def test_orden_con_proyecto_desconocido(capsys):
+    from ghostmind.__main__ import main
+
+    assert main(["descubrir", "--proyecto", "nomina"]) == 2
+    assert "nomina" in capsys.readouterr().err
+
+
+def test_descubrir_otro_proyecto_desde_la_terminal(tmp_path, capsys):
+    from ghostmind.__main__ import main
+    from ghostmind.proyectos import obtener_proyecto
+    from ghostmind.registro import Registro
+
+    ruta = tmp_path / "seguros.sqlite"
+    assert main(["descubrir", "--proyecto", "seguros", "--objetivo", "legacy", "--presupuesto", "1500",
+                 "--db", str(ruta)]) == 0
+    salida = capsys.readouterr().out
+    assert "ENTONCES" in salida and "PAGAR" in salida
+    reg = Registro(ruta, obtener_proyecto("seguros").diccionario())
+    assert [e["objetivo"] for e in reg.ejecuciones("descubrimiento")] == ["legacy"]
+    reg.cerrar()

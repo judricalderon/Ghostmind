@@ -1,7 +1,8 @@
 """Diccionario de campos del sistema y registro de ancho fijo.
 
 Es todo lo que GhostMind sabe del sistema: nombre, tipo, rango o valores de cada entrada, su
-posición en el registro y las decisiones posibles. No contiene reglas de negocio.
+posición en el registro y las decisiones posibles, con la forma de decir cada una (Fase 9). No
+contiene reglas de negocio.
 """
 
 from __future__ import annotations
@@ -19,6 +20,55 @@ Solicitud = dict[str, int | str]
 
 class SolicitudInvalida(ValueError):
     """La solicitud no cumple el diccionario de campos."""
+
+
+TONOS = ("positivo", "negativo", "intermedio", "neutro")
+
+
+@dataclass(frozen=True)
+class TextoDecision:
+    """Cómo se dice una decisión: comienzo de la regla, regla general, palabras clave y tono."""
+
+    frase: str
+    frase_general: str
+    palabras: tuple[str, ...]
+    tono: str = "neutro"
+
+
+# Frases de las decisiones que el diccionario declara solo como texto (las de crédito).
+TEXTOS_CONOCIDOS = {
+    "APROBADO": TextoDecision("Se aprueba la solicitud", "Se aprueba cualquier solicitud.",
+                              ("aprueba", "aprobad", "aprobar"), "positivo"),
+    "RECHAZADO": TextoDecision("Se rechaza la solicitud", "Se rechaza cualquier solicitud.",
+                               ("rechaza", "rechazad", "rechazar"), "negativo"),
+    "REVISION_MANUAL": TextoDecision("La solicitud pasa a revisión manual",
+                                     "Cualquier solicitud pasa a revisión manual.",
+                                     ("revisión manual", "revision manual"), "intermedio"),
+}
+
+
+def texto_generico(valor: str) -> TextoDecision:
+    return TextoDecision(f"La decisión es {valor}", f"La decisión es {valor} en cualquier caso.",
+                         (valor.lower().replace("_", " "),))
+
+
+def leer_decision(dato: str | dict) -> tuple[str, TextoDecision]:
+    """Acepta la decisión como texto o como objeto con sus frases (contracts/proyectos.md)."""
+    if isinstance(dato, str):
+        return dato, TEXTOS_CONOCIDOS.get(dato) or texto_generico(dato)
+    valor = dato["valor"]
+    base = TEXTOS_CONOCIDOS.get(valor) or texto_generico(valor)
+    texto = TextoDecision(
+        frase=dato.get("frase", base.frase),
+        frase_general=dato.get("frase_general", base.frase_general),
+        palabras=tuple(dato.get("palabras", base.palabras)),
+        tono=dato.get("tono", base.tono),
+    )
+    if texto.tono not in TONOS:
+        raise ValueError(f"{valor}: tono desconocido {texto.tono!r}")
+    if not texto.palabras:
+        raise ValueError(f"{valor}: necesita al menos una palabra clave")
+    return valor, texto
 
 
 @dataclass(frozen=True)
@@ -89,11 +139,13 @@ class Diccionario:
     """Diccionario de campos validado."""
 
     def __init__(self, sistema: str, longitud_registro: int, decisiones: tuple[str, ...],
-                 campos: tuple[Campo, ...]):
+                 campos: tuple[Campo, ...], textos: dict[str, TextoDecision] | None = None):
         self.sistema = sistema
         self.longitud_registro = longitud_registro
         self.decisiones = decisiones
         self.campos = campos
+        textos = textos or {}
+        self.textos = {d: textos.get(d) or leer_decision(d)[1] for d in decisiones}
         self._por_nombre = {c.nombre: c for c in campos}
         self._verificar()
 
@@ -123,11 +175,13 @@ class Diccionario:
                     articulo=c.get("articulo", "el"),
                 )
             )
+        decisiones = [leer_decision(d) for d in datos["decisiones"]]
         return cls(
             sistema=datos["sistema"],
             longitud_registro=int(datos["longitud_registro"]),
-            decisiones=tuple(datos["decisiones"]),
+            decisiones=tuple(valor for valor, _ in decisiones),
             campos=tuple(campos),
+            textos=dict(decisiones),
         )
 
     def _verificar(self) -> None:
@@ -162,6 +216,18 @@ class Diccionario:
 
     def campo(self, nombre: str) -> Campo:
         return self._por_nombre[nombre]
+
+    def frase_decision(self, decision: str) -> str:
+        return self.textos[decision].frase
+
+    def frase_general(self, decision: str) -> str:
+        return self.textos[decision].frase_general
+
+    def palabras_decision(self, decision: str) -> tuple[str, ...]:
+        return self.textos[decision].palabras
+
+    def tono_decision(self, decision: str) -> str:
+        return self.textos[decision].tono
 
     @property
     def nombres(self) -> tuple[str, ...]:

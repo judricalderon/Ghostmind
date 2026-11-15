@@ -17,6 +17,7 @@ PROHIBIDOS_EN_TEXTO = [
     re.compile(r"reglas_verdaderas", re.IGNORECASE),
     re.compile(r"alteraciones\.json", re.IGNORECASE),
     re.compile(r"crdapr", re.IGNORECASE),
+    re.compile(r"sinaut", re.IGNORECASE),
     re.compile(r"\bevaluacion\b", re.IGNORECASE),
     re.compile(r"\blegacy[./\\][a-z_]", re.IGNORECASE),
 ]

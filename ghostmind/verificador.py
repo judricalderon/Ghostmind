@@ -13,8 +13,9 @@ from typing import Callable
 
 import numpy as np
 
-from ghostmind.adaptador import Adaptador, ErrorDelSistema, resolver_objetivo
+from ghostmind.adaptador import Adaptador, ErrorDelSistema, comprobar_diccionario, resolver_objetivo
 from ghostmind.diccionario import Diccionario, Solicitud
+from ghostmind.proyectos import PROYECTO_POR_DEFECTO
 from ghostmind.registro import Registro
 from ghostmind.reglas import Caja
 
@@ -53,11 +54,13 @@ class ResultadoVerificacion:
 class Verificador:
     """Compara otra versión del sistema contra la evidencia de un descubrimiento."""
 
-    def __init__(self, dic: Diccionario, registro: Registro, objetivo: str | Callable[[str], str]):
+    def __init__(self, dic: Diccionario, registro: Registro, objetivo: str | Callable[[str], str],
+                 proyecto: str = PROYECTO_POR_DEFECTO):
         self.dic = dic
         self.registro = registro
         if isinstance(objetivo, str):  # se resuelve antes de crear la ejecución
-            self.nombre, self.punto_de_entrada = objetivo, resolver_objetivo(objetivo)
+            comprobar_diccionario(dic, proyecto)
+            self.nombre, self.punto_de_entrada = objetivo, resolver_objetivo(objetivo, proyecto)
         else:
             self.nombre, self.punto_de_entrada = getattr(objetivo, "__name__", "personalizado"), objetivo
 
